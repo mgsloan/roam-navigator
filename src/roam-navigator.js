@@ -1,6 +1,13 @@
+/* TODO:
+ * `b` for beginning main doc
+ * `x` to extend main doc
+ * `s` to focus start of sidebar
+ * only number the visible blocks
+ */
+
 'use strict';
 {
-  const DEBUG = true;
+  const DEBUG = false;
 
   // 'navigate' (g) attempts to assign keys to items based on their names. In
   // some case there might not be a concise labeling. This sets the limit on key
@@ -8,20 +15,23 @@
   const MAX_NAVIGATE_PREFIX = 2;
 
   function initialize() {
-    document.addEventListener('keypress', ev => {
+    document.addEventListener('keydown', ev => {
       const element = ev.target || ev.srcElement;
       const targetIsInput =
             element.tagName == 'INPUT' ||
             element.tagName == 'SELECT' ||
             element.tagName == 'TEXTAREA' ||
             element.isContentEditable;
-      if (targetIsInput) {
-        return;
-      } else if (ev.key === 'g' && !finishNavigate) {
-        navigate();
-        ev.stopPropagation();
-      } else if (finishNavigate) {
+      if (finishNavigate) {
+        if (ev.key !== 'Shift') {
+          ev.stopPropagation();
+        }
         handleNavigateKey(ev);
+      } else if (ev.key === 'g') {
+        if (ev.altKey || !targetIsInput) {
+          ev.stopPropagation();
+          navigate();
+        }
       }
     });
   }
@@ -29,6 +39,14 @@
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
+
+  // Keycode constants
+  const UP_ARROW_KEYCODE = 38;
+  const DOWN_ARROW_KEYCODE = 40;
+  const BACKSPACE_KEYCODE = 8;
+  const ENTER_KEYCODE = 13;
+
+  const RETURN_SYMBOL = '⏎';
 
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
@@ -80,11 +98,11 @@
       withClass(sidebar, 'log-button', logButton => {
         const text = logButton.innerText;
         if (text === 'DAILY NOTES' || text === 'g\nDAILY NOTES') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'g', text: null, initials: null });
+          navigateItems.push({ element: logButton, mustBeKeys: 'g' });
         } else if (text === 'GRAPH OVERVIEW' || text === 'o\nGRAPH OVERVIEW') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'o', text: null, initials: null });
+          navigateItems.push({ element: logButton, mustBeKeys: 'o' });
         } else if (text === 'ALL PAGES' || text === 'a\nALL PAGES') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'a', text: null, initials: null });
+          navigateItems.push({ element: logButton, mustBeKeys: 'a' });
         } else {
           error('Unhandled .log-button:', text);
         }
@@ -94,16 +112,32 @@
           withUniqueClass(item, 'page', all, page => {
             const text = page.innerText;
             navigateItems.push({
-                element: item,
-                mustBeKeys: null,
-                text: preprocessItemText(text),
-                initials: getItemInitials(text),
+              element: item,
+              mustBeKeys: null,
+              text: preprocessItemText(text),
+              initials: getItemInitials(text),
             });
           });
         });
       });
       navigateOptions = assignKeysToItems(navigateItems);
-      console.log(navigateOptions);
+      withUniqueClass(document, 'roam-article', all, article => {
+        const blocks = article.querySelectorAll('.roam-block, .rm-block-input');
+        // TODO: consider using this logic to omit the enter. Downside is less
+        // reliable muscle memory.
+        //
+        // const maxDigits = Math.floor(Math.log10(blocks.length - 1)) + 1;
+        for (let i = 0; i < blocks.length; i++) {
+          const istr = i.toString();
+          // const key = istr.length === maxDigits ? istr : istr + RETURN_SYMBOL;
+          const key = istr + RETURN_SYMBOL;
+          navigateOptions[key] = {
+            element: blocks[i],
+            mustBeKeys: key,
+          };
+        }
+      });
+      debug(navigateOptions);
       var different = false;
       for (var key in navigateOptions) {
         var oldOption = oldNavigateOptions[key];
@@ -182,7 +216,7 @@
     for (var i = 0; i < txt.length; i++) {
       var char = txt[i];
       var lowerChar = char.toLowerCase();
-      if (lowercaseCharIsAlphanum(lowerChar)) {
+      if (lowercaseCharIsAlpha(lowerChar)) {
         result += lowerChar;
       }
     }
@@ -195,7 +229,7 @@
     for (var i = 0; i < txt.length; i++) {
       var char = txt[i];
       var lowerChar = char.toLowerCase();
-      if (lowercaseCharIsAlphanum(lowerChar) &&
+      if (lowercaseCharIsAlpha(lowerChar) &&
         (i === 0 || txt[i - 1] === ' ' || lowerChar !== char)) {
         result += lowerChar;
       }
@@ -203,10 +237,15 @@
     return result;
   }
 
+  function lowercaseCharIsAlpha(char) {
+    var code = char.charCodeAt(0);
+    return code > 96 && code < 123;  // (a-z)
+  }
+
   function lowercaseCharIsAlphanum(char) {
     var code = char.charCodeAt(0);
     return (
-      (code > 47 && code < 58) || // (0-9)
+      (code > 47 && code < 58) ||  // (0-9)
       (code > 96 && code < 123));  // (a-z)
   }
 
@@ -409,34 +448,35 @@
             starredPages.scrollBy(0, starredPages.clientHeight / 2);
           }
         });
-      } else if (ev.keyCode === 38) {
+      } else if (ev.keyCode === UP_ARROW_KEYCODE) {
         // Up arrow to scroll up a little bit.
         keepGoing = true;
         withId('starred-pages', starredPages => {
           starredPages.scrollBy(0, -40);
         });
-      } else if (ev.keyCode === 40) {
+      } else if (ev.keyCode === DOWN_ARROW_KEYCODE) {
         // Down arrow to scroll down a little bit.
         keepGoing = true;
         withId('starred-pages', starredPages=> {
           starredPages.scrollBy(0, 40);
         });
+      } else if (ev.keyCode === BACKSPACE_KEYCODE) {
+        // Backspace removes keys from list of pressed keys.
+        navigateKeysPressed = navigateKeysPressed.slice(0, -1);
+        keepGoing = rerenderTips();
       } else {
         var char = ev.key.toLowerCase();
-        if (char.length === 1 && lowercaseCharIsAlphanum(char)) {
+        if (ev.keyCode === ENTER_KEYCODE) {
+          char = RETURN_SYMBOL;
+        }
+        if (char.length === 1 && (lowercaseCharIsAlphanum(char) || char === RETURN_SYMBOL)) {
           navigateKeysPressed += char;
           var option = navigateOptions[navigateKeysPressed];
           if (option) {
             var el = option.element;
             keepGoing = option.keepGoing;
-            if (ev.shiftKey) {
-              // FIXME: doesn't work, opens link in new tab.
-              // shiftClick(el);
-              click(el);
-            } else {
-              click(el);
-            }
-            // Scroll the task into view, if needed. The delay is
+            navigateToElement(ev, el);
+            // Scroll the clicked thing into view, if needed. The delay is
             // to give time to the uncollapsing.
             setTimeout(() => { el.scrollIntoViewIfNeeded(); }, 300);
             // If we're just changing folding, then the user probably wants to
@@ -456,6 +496,37 @@
         removeOldTips();
         document.body.classList.remove(NAVIGATE_CLASS);
       }
+    }
+  }
+
+  function navigateToElement(ev, el) {
+    if (matchingClass('roam-block')(el)) {
+      const blockParent = el.parentElement;
+      click(el);
+      persistentlyFindTextArea(blockParent, 0, textarea => {
+        textarea.focus();
+        const lastPosition = textarea.value.length;
+        textarea.setSelectionRange(lastPosition, lastPosition);
+      });
+    } else {
+      if (ev.shiftKey) {
+        // FIXME: doesn't work, opens link in new tab.
+        // shiftClick(el);
+        click(el);
+      } else {
+        click(el);
+      }
+    }
+  }
+
+  function persistentlyFindTextArea(blockParent, n, f) {
+    const textarea = getUniqueTag(blockParent, 'textarea');
+    if (textarea) {
+      f(textarea);
+    } else if (n > 200) {
+      warn('Giving up on finding editor text area after', n, 'retries.');
+    } else {
+      setTimeout(() => persistentlyFindTextArea(blockParent, n + 1, f), 15);
     }
   }
 
