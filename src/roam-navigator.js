@@ -1,7 +1,5 @@
 /* TODO
 
- * Title editing
-
  * Click pages on All Pages
 
  * Get eslint to actually check stuff
@@ -36,6 +34,9 @@
   // Key sequence for last block.
   const LAST_BLOCK_KEY = 'd';
 
+  // Key sequence to edit main title.
+  const EDIT_TITLE_KEY = '^';
+
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
   // sets the limit on key sequence length for things based on
@@ -62,8 +63,8 @@
         handleNavigateKey(ev);
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
-        // if (ev.altKey || !getInputTarget(ev)) {
-        if (!getInputTarget(ev)) {
+        if (ev.altKey || !getInputTarget(ev)) {
+        // if (!getInputTarget(ev)) {
           ev.stopImmediatePropagation();
           ev.preventDefault();
           keysToIgnore = {};
@@ -208,6 +209,20 @@
               initials: getItemInitials(text),
             });
           });
+        });
+      });
+
+      // Add article title editing to navigateItems
+      withUniqueClass(document, 'roam-article', all, (article) => {
+        withUniqueClass(article, 'rm-title-display', all, (title) => {
+          // Can't edit title on log pages, so don't include it in
+          // that case.
+          if (!title.parentElement.classList.contains('roam-log-page')) {
+            navigateItems.push({
+              element: title,
+              mustBeKeys: EDIT_TITLE_KEY,
+            });
+          }
         });
       });
 
@@ -603,8 +618,7 @@
         if (ev.key === 'Enter') {
           char = ENTER_SYMBOL;
         }
-        if (char.length === 1 &&
-            (lowercaseCharIsAlphanum(char) || char === ENTER_SYMBOL)) {
+        if (char.length === 1) {
           navigateKeysPressed += char;
           var option = navigateOptions[navigateKeysPressed];
           if (option) {
@@ -649,7 +663,8 @@
           f(textarea);
         }
       });
-    } else if (matchingClass('rm-ref-page-view-title')(el)) {
+    } else if (or(matchingClass('rm-ref-page-view-title'),
+                  matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span', all, click);
     } else {
       click(el);
@@ -1010,6 +1025,14 @@
     return result;
   }
 
+  // Given two predicates, uses || to combine them.
+  function or(p1, p2) {
+    return function(x) {
+      return checkedPredicate('left side of or', p1)(x) ||
+             checkedPredicate('right side of or', p2)(x);
+    };
+  }
+
   function checkedPredicate(context, predicate) {
     return x => {
       var bool = predicate(x);
@@ -1106,6 +1129,10 @@
     '}',
     '.rm-ref-page-view-title .' + TIP_CLASS + ' {',
     '  margin-left: -40px;',
+    '}',
+    '.rm-title-display .' + TIP_CLASS + ' {',
+    '  margin-top: 17px;',
+    '  margin-left: -20px;',
     '}',
   ].join('\n'));
 
