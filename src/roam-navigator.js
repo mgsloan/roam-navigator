@@ -1,18 +1,27 @@
-/* TODO:
- * `b` for beginning main doc
- * `x` to extend main doc
- * `s` to focus start of sidebar
- * only number the visible blocks
+/* TODO
+ * `x` to extend
+ * Fix scrolling
+ * Ignore modifier presses (in todoist-shortcuts too)
  */
 
 'use strict';
 {
   const DEBUG = false;
 
+  // Key to start navigation.  Alt + this key will also trigger navigation.
+  const START_NAVIGATE_KEY = 'g';
+
   // 'navigate' (g) attempts to assign keys to items based on their names. In
   // some case there might not be a concise labeling. This sets the limit on key
   // sequence length for things based on prefixes.
+  //
+  // Note that this isn't really a knob for users, as more than 2 won't fit well.
   const MAX_NAVIGATE_PREFIX = 2;
+
+  // MUTABLE. This is a set of keycodes to ignore for keypress / keyup
+  // events. This solves an issue where keypresses involved in
+  // navigation can get handled elsewhere (especially textareas).
+  let pressKeyCodesToIgnore = {};
 
   function initialize() {
     document.addEventListener('keydown', ev => {
@@ -22,18 +31,36 @@
             element.tagName == 'SELECT' ||
             element.tagName == 'TEXTAREA' ||
             element.isContentEditable;
-      if (finishNavigate) {
+      if (isNavigating()) {
+        pressKeyCodesToIgnore[ev.keyCode] = true;
         if (ev.key !== 'Shift') {
-          ev.stopPropagation();
+          ev.stopImmediatePropagation();
         }
         handleNavigateKey(ev);
-      } else if (ev.key === 'g') {
+        return;
+      } else if (ev.key === START_NAVIGATE_KEY) {
         if (ev.altKey || !targetIsInput) {
-          ev.stopPropagation();
+          ev.stopImmediatePropagation();
+          pressKeyCodesToIgnore = {};
           navigate();
+          return;
         }
       }
+      delete pressKeyCodesToIgnore[ev.keyCode];
     });
+    document.addEventListener('keypress', ev => {
+      if (isNavigating() || pressKeyCodesToIgnore[ev.keyCode]) {
+        ev.stopImmediatePropagation();
+        ev.preventDefault()
+      }
+    }, true);
+    document.addEventListener('keyup', ev => {
+      if (isNavigating() || pressKeyCodesToIgnore[ev.keyCode]) {
+        ev.stopImmediatePropagation();
+        ev.preventDefault()
+        delete pressKeyCodesToIgnore[ev.keyCode];
+      }
+    }, true);
   }
 
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
@@ -46,7 +73,7 @@
   const BACKSPACE_KEYCODE = 8;
   const ENTER_KEYCODE = 13;
 
-  const RETURN_SYMBOL = '⏎';
+  const ENTER_SYMBOL = '⏎';
 
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
@@ -94,19 +121,26 @@
     document.body.classList.add(NAVIGATE_CLASS);
     debug('Creating navigation shortcut tips');
     try {
-      const navigateItems = [];
+      // Initialize a list of elements to bind to keys for
+      // navigation. Starts out with `s` so that this gets reserved as
+      // a prefix for sidebar block navigation.
+      const navigateItems = [{ mustBeKeys: 's' }];
+
+      // Add top level navigations to the list of navigateItems
       withClass(sidebar, 'log-button', logButton => {
         const text = logButton.innerText;
         if (text === 'DAILY NOTES' || text === 'g\nDAILY NOTES') {
           navigateItems.push({ element: logButton, mustBeKeys: 'g' });
-        } else if (text === 'GRAPH OVERVIEW' || text === 'o\nGRAPH OVERVIEW') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'o' });
+        } else if (text === 'GRAPH OVERVIEW' || text === 'o' + ENTER_SYMBOL + '\nGRAPH OVERVIEW') {
+          navigateItems.push({ element: logButton, mustBeKeys: 'o' + ENTER_SYMBOL });
         } else if (text === 'ALL PAGES' || text === 'a\nALL PAGES') {
           navigateItems.push({ element: logButton, mustBeKeys: 'a' });
         } else {
           error('Unhandled .log-button:', text);
         }
       });
+
+      // Add starred shortcuts to the list of navigateItems
       withUniqueClass(sidebar, 'starred-pages', all, starredPages => {
         withTag(starredPages, 'a', item => {
           withUniqueClass(item, 'page', all, page => {
@@ -120,23 +154,21 @@
           });
         });
       });
+
+      // Assign key sequences to all of the navigateItmes
       navigateOptions = assignKeysToItems(navigateItems);
+
+      // Add key sequences for every block in main area.
       withUniqueClass(document, 'roam-article', all, article => {
-        const blocks = article.querySelectorAll('.roam-block, .rm-block-input');
-        // TODO: consider using this logic to omit the enter. Downside is less
-        // reliable muscle memory.
-        //
-        // const maxDigits = Math.floor(Math.log10(blocks.length - 1)) + 1;
-        for (let i = 0; i < blocks.length; i++) {
-          const istr = i.toString();
-          // const key = istr.length === maxDigits ? istr : istr + RETURN_SYMBOL;
-          const key = istr + RETURN_SYMBOL;
-          navigateOptions[key] = {
-            element: blocks[i],
-            mustBeKeys: key,
-          };
-        }
+        addBlocksToNavigateOptions(navigateOptions, article, '');
       });
+
+      // Add key sequences for every block in sidebar.
+      delete navigateOptions['s'];
+      withId('right-sidebar', rightSidebar => {
+        addBlocksToNavigateOptions(navigateOptions, rightSidebar, 's');
+      });
+
       debug(navigateOptions);
       var different = false;
       for (var key in navigateOptions) {
@@ -169,6 +201,19 @@
     }
   }
 
+  function addBlocksToNavigateOptions(navigateOptions, el, prefix) {
+    const blocks = el.querySelectorAll('.rm-block-text, #block-input-ghost');
+    const maxDigits = Math.floor(Math.log10(blocks.length - 1)) + 1;
+    for (let i = 0; i < blocks.length; i++) {
+      const istr = i.toString();
+      const key = prefix + (istr.length === maxDigits ? istr : istr + ENTER_SYMBOL);
+      navigateOptions[key] = {
+        element: blocks[i],
+        mustBeKeys: key,
+      };
+    }
+  }
+
   // Add in tips to tell the user what key to press.
   function rerenderTips() {
     ensureSidebarOpen();
@@ -187,7 +232,11 @@
           if (prefix.length > 0) {
             tip.prepend(span(TIP_TYPED_CLASS, text(prefix)));
           }
-          el.prepend(tip);
+          if (matchingClass('rm-block-text')(el)) {
+            findParent(el, matchingClass('flex-h-box')).prepend(tip);
+          } else {
+            el.prepend(tip);
+          }
           renderedAny = true;
         }
       }
@@ -467,9 +516,10 @@
       } else {
         var char = ev.key.toLowerCase();
         if (ev.keyCode === ENTER_KEYCODE) {
-          char = RETURN_SYMBOL;
+          char = ENTER_SYMBOL;
         }
-        if (char.length === 1 && (lowercaseCharIsAlphanum(char) || char === RETURN_SYMBOL)) {
+        if (char.length === 1 &&
+            (lowercaseCharIsAlphanum(char) || char === ENTER_SYMBOL)) {
           navigateKeysPressed += char;
           var option = navigateOptions[navigateKeysPressed];
           if (option) {
@@ -500,7 +550,7 @@
   }
 
   function navigateToElement(ev, el) {
-    if (matchingClass('roam-block')(el)) {
+    if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
       click(el);
       persistentlyFindTextArea(blockParent, 0, textarea => {
@@ -543,6 +593,10 @@
       }
       toDelete = document.getElementsByClassName(TIP_CLASS);
     } while (toDelete.length > 0);
+  }
+
+  function isNavigating() {
+    return finishNavigate !== null;
   }
 
   /*****************************************************************************
@@ -662,6 +716,25 @@
     style.textContent = css;
     document.documentElement.appendChild(style);
     return style;
+  }
+
+  // Alias for document.getElementById
+  function getById(id) {
+    return document.getElementById(id);
+  }
+
+  // Invokes the function for the matching id, or logs a warning.
+  function withId(id, f) {
+    if (arguments.length > 2) {
+      error('Too many arguments passed to withId', arguments);
+    }
+    var el = getById(id);
+    if (el) {
+      return f(el);
+    } else {
+      warn('Couldn\'t find ID', id);
+      return null;
+    }
   }
 
   // Invokes the function for every descendant element that matches
@@ -857,12 +930,12 @@
   addCss([
     '.' + TIP_CLASS + ' {',
     '  position: absolute;',
-    '  margin-top: 5px;',
+    '  margin-top: 8px;',
     '  margin-left: -18px;',
     '  width: 22px;',
     '  font-family: monospace;',
     '  font-weight: normal;',
-    '  font-size: 16px;',
+    '  font-size: 14px;',
     '  color: #dd4b39;',
     '  z-index: 2147483647;',
     '}',
@@ -870,7 +943,11 @@
     '  color: #aaa;',
     '}',
     '.log-button .' + TIP_CLASS + ' {',
-    '  margin-top: -3px;',
+    '  margin-top: 0;',
+    '}',
+    '.roam-block-container .' + TIP_CLASS + ' {',
+    '  margin-top: 4px;',
+    '  margin-left: 0;',
     '}'
   ].join('\n'));
 
