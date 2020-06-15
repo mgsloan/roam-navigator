@@ -1,11 +1,14 @@
 /* TODO
 
- * Click pages on All Pages
-
  * Get eslint to actually check stuff
+
+ * When switching main focus, re-enable navigation mode. So, use
+ * keepGoing, but have it add new tips when the main page changes.
 
  * Fix navigation to shortcut with input focused, so that alt-g can be
    re-enabled.
+
+ * Click pages on All Pages
 
  */
 
