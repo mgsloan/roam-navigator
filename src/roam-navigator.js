@@ -4,8 +4,6 @@
 
  * Fix scrolling
 
- * Ignore modifier presses (in todoist-shortcuts too)
-
  * Click pages on All Pages
 
  * Get eslint to actually check stuff
