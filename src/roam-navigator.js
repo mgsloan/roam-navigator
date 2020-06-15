@@ -62,6 +62,7 @@
         // if (ev.altKey || !getInputTarget(ev)) {
         if (!getInputTarget(ev)) {
           ev.stopImmediatePropagation();
+          ev.preventDefault();
           pressKeyCodesToIgnore = {};
           navigate();
           return;
