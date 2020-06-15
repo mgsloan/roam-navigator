@@ -1,7 +1,9 @@
 /* TODO
  * `x` to extend
  * Fix scrolling
+ * Fix navigation to shortcut with input focused
  * Ignore modifier presses (in todoist-shortcuts too)
+ * Click pages on All Pages
  */
 
 'use strict';
