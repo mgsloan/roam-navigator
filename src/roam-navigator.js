@@ -540,9 +540,8 @@
             var el = option.element;
             keepGoing = option.keepGoing;
             navigateToElement(ev, el);
-            // Scroll the clicked thing into view, if needed. The delay is
-            // to give time to the uncollapsing.
-            setTimeout(() => { el.scrollIntoViewIfNeeded(); }, 300);
+            // Scroll the clicked thing into view, if needed.
+            el.scrollIntoViewIfNeeded();
             // If we're just changing folding, then the user probably wants to
             // stay in navigation mode, so reset and rerender.
             if (keepGoing) {
