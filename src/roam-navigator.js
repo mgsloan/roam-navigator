@@ -93,7 +93,6 @@
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
-  const GHOST_CONTAINER_CLASS = 'roam_navigator_ghost_container';
 
   // Keycode constants
   const UP_ARROW_KEYCODE = 38;
@@ -243,16 +242,6 @@
         element: block,
         mustBeKeys: key,
       };
-      // HACK: adds a class to allow specific layout for
-      // #block-input-ghost case
-      if (block.id === 'block-input-ghost') {
-        const parentContainer = findParent(block, matchingClass('flex-h-box'));
-        if (parentContainer) {
-          parentContainer.classList.add(GHOST_CONTAINER_CLASS);
-        } else {
-          warn('Couldn\'t find expected parent container for', block);
-        }
-      }
     }
   }
 
@@ -987,8 +976,8 @@
   addCss([
     '.' + TIP_CLASS + ' {',
     '  position: absolute;',
-    '  margin-top: 8px;',
-    '  margin-left: -18px;',
+    '  margin-top: 4px;',
+    '  margin-left: 0;',
     '  width: 22px;',
     '  font-family: monospace;',
     '  font-weight: normal;',
@@ -1001,12 +990,12 @@
     '}',
     '.log-button .' + TIP_CLASS + ' {',
     '  margin-top: 0;',
+    '  margin-left: -18px;',
     '}',
-    '.' + GHOST_CONTAINER_CLASS + ' .' + TIP_CLASS +
-      ', .roam-block-container .' + TIP_CLASS + ' {',
-    '  margin-top: 4px;',
-    '  margin-left: 0;',
-    '}',
+    'a > .' + TIP_CLASS + ' {',
+    '  margin-top: 8px;',
+    '  margin-left: -18px;',
+    '}'
   ].join('\n'));
 
   initialize();
