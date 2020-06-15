@@ -2,7 +2,9 @@
     "parserOptions": {
         "ecmaVersion": 2017,
     },
+    "extends": "google",
     "rules": {
-        "semi": "error"
+      "require-jsdoc": "off",
+      "spaced-comment": "off",
     }
 }

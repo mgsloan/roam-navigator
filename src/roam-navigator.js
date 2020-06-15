@@ -1,7 +1,5 @@
 /* TODO
 
- * Get eslint to actually check stuff
-
  * When switching main focus, re-enable navigation mode. So, use
  * keepGoing, but have it add new tips when the main page changes.
 
@@ -14,7 +12,7 @@
 
 'use strict';
 {
-  const DEBUG = false;
+  const DEBUG = true;
 
   // Symbol used to indicate the enter button.
   const ENTER_SYMBOL = '⏎';
@@ -55,7 +53,7 @@
   let keysToIgnore = {};
 
   function initialize() {
-    document.addEventListener('keydown', ev => {
+    document.addEventListener('keydown', (ev) => {
       debug('keydown', ev);
       debug('keysToIgnore', keysToIgnore);
       if (keyIsModifier(ev)) {
@@ -77,7 +75,7 @@
       }
       delete keysToIgnore[ev.key];
     }, true);
-    document.addEventListener('keypress', ev => {
+    document.addEventListener('keypress', (ev) => {
       debug('keypress', ev);
       debug('keysToIgnore', keysToIgnore);
       if (isNavigating() || keysToIgnore[ev.key]) {
@@ -85,7 +83,7 @@
         ev.preventDefault();
       }
     }, true);
-    document.addEventListener('keyup', ev => {
+    document.addEventListener('keyup', (ev) => {
       debug('keyup', ev);
       debug('keysToIgnore', keysToIgnore);
       if (isNavigating() || keysToIgnore[ev.key]) {
@@ -136,14 +134,19 @@
   // Switches to a navigation mode, where navigation targets are annotated
   // with letters to press to click.
   function navigate() {
-    withUniqueClass(document, 'roam-sidebar-container', all, sidebar => {
+    withUniqueClass(document, 'roam-sidebar-container', all, (sidebar) => {
       // Since the projects list can get reconstructed, watch for changes and
       // reconstruct the shortcut tips.  A function to unregister the mutation
       // observer is passed in.
       oldNavigateOptions = [];
 
-      const observer = new MutationObserver(() => { setupNavigate(sidebar); });
-      observer.observe(sidebar, { childList: true, subtree: true });
+      const observer = new MutationObserver(() => {
+        setupNavigate(sidebar);
+      });
+      observer.observe(sidebar, {
+        childList: true,
+        subtree: true,
+      });
 
       finishNavigate = () => {
         observer.disconnect();
@@ -155,7 +158,7 @@
     });
   }
 
-  // Assigns key bindings to sections like inbox / today / various projects.
+  // Assigns key bindings to sections like inbox / today / constious projects.
   // These keybindings get displayed along the options.  This function should
   // be re-invoked every time the DOM refreshes, in order to ensure they are
   // displayed. It overrides the keyboard handler such that it temporarily
@@ -174,7 +177,7 @@
       }];
 
       // Add top level navigations to the list of navigateItems
-      withClass(sidebar, 'log-button', logButton => {
+      withClass(sidebar, 'log-button', (logButton) => {
         const text = logButton.innerText;
         if (text === 'DAILY NOTES' ||
             text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
@@ -201,9 +204,9 @@
       });
 
       // Add starred shortcuts to the list of navigateItems
-      withUniqueClass(sidebar, 'starred-pages', all, starredPages => {
-        withTag(starredPages, 'a', item => {
-          withUniqueClass(item, 'page', all, page => {
+      withUniqueClass(sidebar, 'starred-pages', all, (starredPages) => {
+        withTag(starredPages, 'a', (item) => {
+          withUniqueClass(item, 'page', all, (page) => {
             const text = page.innerText;
             navigateItems.push({
               element: item,
@@ -237,25 +240,25 @@
       delete navigateOptions[LAST_BLOCK_KEY];
 
       // Add key sequences for every block in main area.
-      withUniqueClass(document, 'roam-article', all, article => {
+      withUniqueClass(document, 'roam-article', all, (article) => {
         const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
         addBlocks(navigateOptions, article, lastBlock, '');
       });
 
       // Add key sequences for every block in sidebar.
-      withId('right-sidebar', rightSidebar => {
+      withId('right-sidebar', (rightSidebar) => {
         const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
         addBlocks(
-          navigateOptions,
-          rightSidebar,
-          lastBlock,
-          SIDEBAR_BLOCK_PREFIX);
+            navigateOptions,
+            rightSidebar,
+            lastBlock,
+            SIDEBAR_BLOCK_PREFIX);
       });
 
       // Avoid infinite recursion. See comment on oldNavigateOptions.
-      var different = false;
-      for (var key in navigateOptions) {
-        var oldOption = oldNavigateOptions[key];
+      let different = false;
+      for (const key of Object.keys(navigateOptions)) {
+        const oldOption = oldNavigateOptions[key];
         if (!oldOption) {
           different = true;
           break;
@@ -280,7 +283,9 @@
         finishNavigate();
       }
     } catch (ex) {
-      if (finishNavigate) { finishNavigate(); }
+      if (finishNavigate) {
+        finishNavigate();
+      }
       removeOldTips();
       document.body.classList.remove(NAVIGATE_CLASS);
       throw ex;
@@ -293,7 +298,8 @@
       '.rm-ref-page-view-title',
       '#block-input-ghost',
     ].join(', '));
-    const maxDigits = Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
+    const maxDigits =
+          Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       const istr = i.toString();
@@ -314,21 +320,22 @@
   function rerenderTips() {
     ensureSidebarOpen();
     removeOldTips();
-    var renderedAny = false;
-    for (var key in navigateOptions) {
-      var prefix = key.slice(0, navigateKeysPressed.length);
-      var rest = key.slice(navigateKeysPressed.length);
+    let renderedAny = false;
+    for (const key of Object.keys(navigateOptions)) {
+      const prefix = key.slice(0, navigateKeysPressed.length);
+      const rest = key.slice(navigateKeysPressed.length);
       if (prefix === navigateKeysPressed) {
-        var option = navigateOptions[key];
-        var el = option.element;
+        const option = navigateOptions[key];
+        const el = option.element;
         if (!el) {
           error('Missing element for tip', key);
         } else {
-          var tip = div(TIP_CLASS, text(rest));
+          const tip = div(TIP_CLASS, text(rest));
           if (prefix.length > 0) {
             tip.prepend(span(TIP_TYPED_CLASS, text(prefix)));
           }
-          if (matchingClass('rm-block-text')(el) || el.id === 'block-input-ghost') {
+          if (matchingClass('rm-block-text')(el) ||
+              el.id === 'block-input-ghost') {
             findParent(el, matchingClass('flex-h-box')).prepend(tip);
           } else {
             el.prepend(tip);
@@ -341,7 +348,7 @@
   }
 
   function ensureSidebarOpen() {
-    withUniqueClass(document, 'roam-topbar', all, toolbar => {
+    withUniqueClass(document, 'roam-topbar', all, (toolbar) => {
       const menu = getUniqueClass(toolbar, 'bp3-icon-menu');
       if (menu) {
         mouseOver(menu);
@@ -350,17 +357,17 @@
   }
 
   function closeSidebarIfOpened() {
-    withUniqueClass(document, 'roam-sidebar-content', all, sidebar => {
+    withUniqueClass(document, 'roam-sidebar-content', all, (sidebar) => {
       mouseOut(sidebar);
     });
   }
 
   // Lowercase and take only alphanumeric.
   function preprocessItemText(txt) {
-    var result = '';
-    for (var i = 0; i < txt.length; i++) {
-      var char = txt[i];
-      var lowerChar = char.toLowerCase();
+    let result = '';
+    for (let i = 0; i < txt.length; i++) {
+      const char = txt[i];
+      const lowerChar = char.toLowerCase();
       if (lowercaseCharIsAlpha(lowerChar)) {
         result += lowerChar;
       }
@@ -370,10 +377,10 @@
 
   // Lowercase and get initials.
   function getItemInitials(txt) {
-    var result = '';
-    for (var i = 0; i < txt.length; i++) {
-      var char = txt[i];
-      var lowerChar = char.toLowerCase();
+    let result = '';
+    for (let i = 0; i < txt.length; i++) {
+      const char = txt[i];
+      const lowerChar = char.toLowerCase();
       if (lowercaseCharIsAlpha(lowerChar) &&
         (i === 0 || txt[i - 1] === ' ' || lowerChar !== char)) {
         result += lowerChar;
@@ -383,36 +390,29 @@
   }
 
   function lowercaseCharIsAlpha(char) {
-    var code = char.charCodeAt(0);
-    return code > 96 && code < 123;  // (a-z)
+    const code = char.charCodeAt(0);
+    return code > 96 && code < 123; // (a-z)
   }
 
-  function lowercaseCharIsAlphanum(char) {
-    var code = char.charCodeAt(0);
-    return (
-      (code > 47 && code < 58) ||  // (0-9)
-      (code > 96 && code < 123));  // (a-z)
-  }
-
-  var JUMP_KEYS = 'asdfghjklqwertyuiopzxcvbnm1234567890';
+  const JUMP_KEYS = 'asdfghjklqwertyuiopzxcvbnm1234567890';
 
   // Assign keys to items based on their text.
   function assignKeysToItems(items) {
-    var result = {};
-    var item;
-    var keys;
-    var prefix;
-    var prefixesUsed = {};
+    const result = {};
+    let item;
+    let keys;
+    let prefix;
+    const prefixesUsed = {};
     // Ensure none of the results are prefixes or equal to this keysequence.
-    var prefixNotAliased = ks => {
-      for (var i = 1; i <= ks.length; i++) {
+    const prefixNotAliased = (ks) => {
+      for (let i = 1; i <= ks.length; i++) {
         if (result[ks.slice(0, i)]) {
           return false;
         }
       }
       return true;
     };
-    var noAliasing = ks => {
+    const noAliasing = (ks) => {
       if (!prefixNotAliased(ks)) {
         return false;
       }
@@ -422,22 +422,22 @@
       }
       return true;
     };
-    var addResult = (ks, x) => {
-      var noAlias = noAliasing(ks);
+    const addResult = (ks, x) => {
+      const noAlias = noAliasing(ks);
       if (noAlias) {
         result[ks] = x;
-        for (var i = 1; i <= ks.length; i++) {
+        for (let i = 1; i <= ks.length; i++) {
           prefixesUsed[ks.slice(0, i)] = true;
         }
       }
       return noAlias;
     };
-    var addViaKeyFunc = (mode, f) => {
-      var groups = {};
-      for (var j = 0; j < items.length; j++) {
+    const addViaKeyFunc = (mode, f) => {
+      const groups = {};
+      for (let j = 0; j < items.length; j++) {
         keys = f(items[j]);
         if (keys) {
-          var group = groups[keys];
+          let group = groups[keys];
           if (!group) {
             group = [];
             groups[keys] = group;
@@ -445,21 +445,22 @@
           group.push(j);
         }
       }
-      var qualifying = [];
+      const qualifying = [];
       for (keys in groups) {
         if (noAliasing(keys)) {
-          var groupItems = groups[keys];
-          var qualifies = false;
+          const groupItems = groups[keys];
+          let qualifies = false;
           if (mode === 'no-shortening') {
             qualifies = true;
           } else if (mode === 'try-shortening') {
             // Prefer shortened key sequences if they are unambiguous.
-            for (var sl = MAX_NAVIGATE_PREFIX - 1; sl > 0; sl--) {
-              var shortened = keys.slice(0, sl);
+            for (let sl = MAX_NAVIGATE_PREFIX - 1; sl > 0; sl--) {
+              const shortened = keys.slice(0, sl);
               if (noAliasing(shortened)) {
-                var found = true;
-                for (var otherKeys in groups) {
-                  if (otherKeys !== keys && otherKeys.slice(0, sl) !== shortened) {
+                const found = true;
+                for (const otherKeys in groups) {
+                  if (otherKeys !== keys &&
+                      otherKeys.slice(0, sl) !== shortened) {
                     found = false;
                     break;
                   }
@@ -476,7 +477,7 @@
             // shortening.
             qualifies = true;
           } else {
-            error('Invariant violation: unexpected mode in addViaKeyFunc');
+            error('Inconstiant violation: unexpected mode in addViaKeyFunc');
           }
           if (qualifies) {
             qualifying.push([keys, groupItems[0]]);
@@ -484,10 +485,12 @@
         }
       }
       // sort backwards so that deletion works.
-      qualifying.sort((a, b) => { return b[1] - a[1]; });
-      for (var k = 0; k < qualifying.length; k++) {
+      qualifying.sort((a, b) => {
+        return b[1] - a[1];
+      });
+      for (let k = 0; k < qualifying.length; k++) {
         keys = qualifying[k][0];
-        var ix = qualifying[k][1];
+        const ix = qualifying[k][1];
         item = items[ix];
         if (addResult(keys, item)) {
           items.splice(ix, 1);
@@ -495,11 +498,13 @@
       }
     };
     // Handle items with 'mustBeKeys' set.
-    addViaKeyFunc('no-shortening', it => { return it.mustBeKeys; });
+    addViaKeyFunc('no-shortening', (it) => {
+      return it.mustBeKeys;
+    });
     // When initials are at least MAX_NAVIGATE_PREFIX in length, prefer
     // assigning those.
-    addViaKeyFunc('no-shortening', it => {
-      var initials = it.initials;
+    addViaKeyFunc('no-shortening', (it) => {
+      const initials = it.initials;
       if (initials.length >= MAX_NAVIGATE_PREFIX) {
         return initials.slice(0, MAX_NAVIGATE_PREFIX);
       } else {
@@ -507,17 +512,17 @@
       }
     });
     // Attempt to use prefix as the key sequence.
-    addViaKeyFunc('try-shortening', it => {
+    addViaKeyFunc('try-shortening', (it) => {
       return it.text.slice(0, MAX_NAVIGATE_PREFIX);
     });
     // For the ones that didn't have unambiguous prefixes, try other character
     // suffixes.
-    for (var p = MAX_NAVIGATE_PREFIX - 1; p >= 0; p--) {
-      for (var m = 0; m < items.length; m++) {
+    for (let p = MAX_NAVIGATE_PREFIX - 1; p >= 0; p--) {
+      for (let m = 0; m < items.length; m++) {
         item = items[m];
         prefix = item.text.slice(0, MAX_NAVIGATE_PREFIX - 1);
         if (prefixNotAliased(prefix)) {
-          for (var n = -1; n < JUMP_KEYS.length; n++) {
+          for (let n = -1; n < JUMP_KEYS.length; n++) {
             if (n === -1) {
               if (prefix.length > 0) {
                 // First, try doubling the last key, easiest to type.
@@ -538,11 +543,12 @@
       }
     }
     // Finally, fallback on choosing arbitrary combinations of characters.
-    for (var q = 0; q < items.length; q++) {
+    for (let q = 0; q < items.length; q++) {
       item = items[q];
-      var success = false;
-      // TODO: Don't hardcode choosing one or two, instead follow MAX_NAVIGATE_PREFIX
-      for (var r = 0; r < JUMP_KEYS.length; r++) {
+      let success = false;
+      // TODO: Don't hardcode choosing one or two, instead follow
+      // MAX_NAVIGATE_PREFIX
+      for (let r = 0; r < JUMP_KEYS.length; r++) {
         if (addResult(JUMP_KEYS[r], item)) {
           items.splice(q, 1);
           q--;
@@ -553,10 +559,10 @@
       if (success) {
         continue;
       }
-      for (var s = 0; s < JUMP_KEYS.length; s++) {
-        for (var t = -1; t < JUMP_KEYS.length; t++) {
+      for (let s = 0; s < JUMP_KEYS.length; s++) {
+        for (let t = -1; t < JUMP_KEYS.length; t++) {
           // Prefer doubling keys.
-          var secondKey = t === -1 ? JUMP_KEYS[s] : JUMP_KEYS[t];
+          const secondKey = t === -1 ? JUMP_KEYS[s] : JUMP_KEYS[t];
           if (addResult(JUMP_KEYS[s] + secondKey, item)) {
             items.splice(q, 1);
             q--;
@@ -572,36 +578,36 @@
     // That should have assigned keys to everything, but if there are many
     // similar number of options this case can happen.
     if (items.length !== 0) {
-      info('There must be many similar sidebar options, couldn\'t find keysequences for', items);
+      info('There must be many options, couldn\'t find keys for', items);
     }
     return result;
   }
 
   function handleNavigateKey(ev) {
-    var keepGoing = false;
+    let keepGoing = false;
     try {
       // Space to scroll down.  Shift+space to scroll up.
       if (ev.key === ' ') {
         keepGoing = true;
         if (navigateKeysPressed && navigateKeysPressed[0] === 's') {
-          withId('roam-right-sidebar-content', rightSidebar => {
+          withId('roam-right-sidebar-content', (rightSidebar) => {
             scrollUpOrDown(ev, rightSidebar);
           });
         } else {
-          withUniqueClass(document, 'roam-center', all, roamCenter => {
+          withUniqueClass(document, 'roam-center', all, (roamCenter) => {
             scrollUpOrDown(ev, roamCenter.firstChild);
           });
         }
       } else if (ev.key === 'ArrowUp') {
         // Up arrow to scroll up a little bit.
         keepGoing = true;
-        withId('starred-pages', starredPages => {
+        withId('starred-pages', (starredPages) => {
           starredPages.scrollBy(0, -40);
         });
       } else if (ev.key === 'ArrowDown') {
         // Down arrow to scroll down a little bit.
         keepGoing = true;
-        withId('starred-pages', starredPages=> {
+        withId('starred-pages', (starredPages) => {
           starredPages.scrollBy(0, 40);
         });
       } else if (ev.key === 'Backspace') {
@@ -617,15 +623,15 @@
         withId('roam-right-sidebar-content', extendWithNewBlock);
       */
       } else {
-        var char = ev.key.toLowerCase();
+        let char = ev.key.toLowerCase();
         if (ev.key === 'Enter') {
           char = ENTER_SYMBOL;
         }
         if (char.length === 1) {
           navigateKeysPressed += char;
-          var option = navigateOptions[navigateKeysPressed];
+          const option = navigateOptions[navigateKeysPressed];
           if (option) {
-            var el = option.element;
+            const el = option.element;
             keepGoing = option.keepGoing;
             navigateToElement(ev, el);
             // Scroll the clicked thing into view, if needed.
@@ -643,7 +649,9 @@
       }
     } finally {
       if (!keepGoing) {
-        if (finishNavigate) { finishNavigate(); }
+        if (finishNavigate) {
+          finishNavigate();
+        }
         removeOldTips();
         document.body.classList.remove(NAVIGATE_CLASS);
       }
@@ -658,7 +666,7 @@
     if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
       click(el);
-      persistentlyFindTextArea(blockParent, 0, textarea => {
+      persistentlyFindTextArea(blockParent, 0, (textarea) => {
         textarea.focus();
         const lastPosition = textarea.value.length;
         textarea.setSelectionRange(lastPosition, lastPosition);
@@ -667,7 +675,7 @@
         }
       });
     } else if (or(matchingClass('rm-ref-page-view-title'),
-                  matchingClass('rm-title-display'))(el)) {
+        matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span', all, click);
     } else {
       click(el);
@@ -708,10 +716,10 @@
     // FIXME: I can't quite explain this, but for some reason, querying the
     // list that matches the class name doesn't quite work.  So instead find
     // and remove until they are all gone.
-    var toDelete = [];
+    let toDelete = [];
     do {
-      for (var i = 0; i < toDelete.length; i++) {
-        var el = toDelete[i];
+      for (let i = 0; i < toDelete.length; i++) {
+        const el = toDelete[i];
         el.parentElement.removeChild(el);
       }
       toDelete = document.getElementsByClassName(TIP_CLASS);
@@ -726,38 +734,37 @@
    * Utilities
    */
 
-  // Returns string with prefix removed.  Returns null if prefix doesn't
-  // match.
-  function stripPrefix(prefix, string) {
-    var found = string.slice(0, prefix.length);
-    if (found === prefix) {
-      return string.slice(prefix.length);
-    } else {
-      return null;
-    }
-  }
-
   // Simulate a mouse over event.
   function mouseOver(el) {
-    var options = { bubbles: true, cancelable: true, view: window, target: el };
+    const options = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      target: el,
+    };
     el.dispatchEvent(new MouseEvent('mouseover', options));
   }
 
   // Simulate a mouse over event.
   function mouseOut(el) {
-    var options = { bubbles: true, cancelable: true, view: window, target: el };
+    const options = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      target: el,
+    };
     el.dispatchEvent(new MouseEvent('mouseout', options));
   }
 
   // Simulate a mouse click.
   function click(el) {
-    var options = {
+    const options = {
       bubbles: true,
       cancelable: true,
       view: window,
       target: el,
       which: 1,
-      button: 0
+      button: 0,
     };
     el.dispatchEvent(new MouseEvent('mousedown', options));
     el.dispatchEvent(new MouseEvent('mouseup', options));
@@ -765,14 +772,15 @@
   }
 
   // Simulate a shift mouse click.
+  // eslint-disable-next-line no-unused-vars
   function shiftClick(el) {
-    var options = {
+    const options = {
       bubbles: true,
       cancelable: true,
       view: window,
       which: 1,
       button: 0,
-      shiftKey: true
+      shiftKey: true,
     };
     document.body.dispatchEvent(createShiftEvent('keydown'));
     el.dispatchEvent(new MouseEvent('mousedown', options));
@@ -786,7 +794,7 @@
   }
 
   function createKeyEvent(type, key, code) {
-    let keyEvent = new Event(type);
+    const keyEvent = new Event(type);
     keyEvent.key = key;
     keyEvent.keyCode = code;
     keyEvent.which = code;
@@ -795,50 +803,47 @@
 
   const EXTENSION_NAME = 'roam-navigator';
 
-  function debug() {
+  function debug(...rest) {
     if (DEBUG) {
-      var args = [].slice.call(arguments);
+      const args = [].slice.call(rest);
       args.unshift(EXTENSION_NAME + ':');
       // eslint-disable-next-line no-console
-      console.log.apply(null, args);
+      console.log(...args);
     }
   }
 
-  function debugWithStack() {
+  function debugWithStack(...rest) {
     if (DEBUG) {
-      var args = [].slice.call(arguments);
+      const args = [].slice.call(rest);
       args.unshift(EXTENSION_NAME + ':');
       args.push('\n' + getStack());
       // eslint-disable-next-line no-console
-      console.log.apply(null, args);
+      console.log(...args);
     }
   }
 
   // Used to notify about an issue that's expected to sometimes occur during
   // normal operation.
-  function info() {
-    var args = [].slice.call(arguments);
+  function info(...rest) {
+    const args = [].slice.call(rest);
     args.unshift(EXTENSION_NAME + ':');
     args.push('(this is fine)');
-    // eslint-disable-next-line no-console
-    console.log.apply(null, args);
+    console.log(...args);
   }
 
-  function warn() {
-    var args = [].slice.call(arguments);
+  function warn(...rest) {
+    const args = [].slice.call(rest);
     args.unshift(EXTENSION_NAME + ':');
     args.push('\n' + getStack());
-    // eslint-disable-next-line no-console
-    console.warn.apply(null, args);
+    console.warn(...args);
   }
 
-  function error() {
-    var args = [].slice.call(arguments);
+  function error(...rest) {
+    const args = [].slice.call(rest);
     args.unshift(EXTENSION_NAME + ':');
     args.push(getStack());
     args.push('Please report this as an issue to http://github.com/mgsloan/roam-navigator');
-    // eslint-disable-next-line no-console
-    console.error.apply(null, arguments);
+    console.error(...args);
   }
 
   // https://stackoverflow.com/a/41586311/1164871
@@ -852,7 +857,7 @@
 
   // https://github.com/greasemonkey/greasemonkey/issues/2724#issuecomment-354005162
   function addCss(css) {
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.textContent = css;
     document.documentElement.appendChild(style);
     return style;
@@ -864,11 +869,11 @@
   }
 
   // Invokes the function for the matching id, or logs a warning.
-  function withId(id, f) {
-    if (arguments.length > 2) {
-      error('Too many arguments passed to withId', arguments);
+  function withId(id, f, ...rest) {
+    if (rest.length > 0) {
+      error('Too many arguments passed to withId', rest);
     }
-    var el = getById(id);
+    const el = getById(id);
     if (el) {
       return f(el);
     } else {
@@ -879,24 +884,24 @@
 
   // Invokes the function for every descendant element that matches
   // the class name.
-  function withClass(parent, cls, f) {
-    if (arguments.length > 3) {
-      error('Too many arguments passed to withClass', arguments);
+  function withClass(parent, cls, f, ...rest) {
+    if (rest.length > 0) {
+      error('Too many arguments passed to withClass', rest);
     }
-    var els = parent.getElementsByClassName(cls);
-    for (var i = 0; i < els.length; i++) {
+    const els = parent.getElementsByClassName(cls);
+    for (let i = 0; i < els.length; i++) {
       f(els[i]);
     }
   }
 
   // Invokes the function for every descendant element that matches a
   // tag name.
-  function withTag(parent, tag, f) {
-    if (arguments.length > 3) {
-      error('Too many arguments passed to withTag', arguments);
+  function withTag(parent, tag, f, ...rest) {
+    if (rest.length > 0) {
+      error('Too many arguments passed to withTag', rest);
     }
-    var els = parent.getElementsByTagName(tag);
-    for (var i = 0; i < els.length; i++) {
+    const els = parent.getElementsByTagName(tag);
+    for (let i = 0; i < els.length; i++) {
       f(els[i]);
     }
   }
@@ -905,7 +910,7 @@
   // predicate. Returns null if element is null.
   function findParent(el0, predicate) {
     if (!el0) return null;
-    var el = el0.parentElement;
+    let el = el0.parentElement;
     if (!el) return null;
     do {
       if (predicate(el)) {
@@ -916,25 +921,21 @@
     return null;
   }
 
-  // Returns first descendant that matches the specified class and
-  // predicate.
-  function getFirstClass(parent, cls, predicate) {
-    return findFirst(predicate, parent.getElementsByClassName(cls));
-  }
-
   // Returns last descendant that matches the specified class and
   // predicate.
   function getLastClass(parent, cls, predicate) {
     return findLast(predicate, parent.getElementsByClassName(cls));
   }
 
-  // Checks that there is only one descendant element that matches the class name and
-  // predicate, and returns it. Returns null if it is not found or not unique.
+  // Checks that there is only one descendant element that matches the
+  // class name and predicate, and returns it. Returns null if it is
+  // not found or not unique.
   function getUniqueClass(parent, cls, predicate) {
-    var foundElements = [];
+    let foundElements = [];
     if (cls.constructor === Array) {
-      for (var i = 0; i < cls.length; i++) {
-        foundElements = foundElements.concat(Array.from(parent.getElementsByClassName(cls[i])));
+      for (let i = 0; i < cls.length; i++) {
+        const results = parent.getElementsByClassName(cls[i]);
+        foundElements = foundElements.concat(Array.from(results));
       }
     } else {
       foundElements = parent.getElementsByClassName(cls);
@@ -946,19 +947,14 @@
   // class name, and invokes the function on it. Logs a warning if
   // there isn't exactly one.
   function withUniqueClass(parent, cls, predicate, f) {
-    var result = getUniqueClass(parent, cls, predicate);
+    const result = getUniqueClass(parent, cls, predicate);
     if (result) {
       return f(result);
     } else {
-      warn('Couldn\'t find unique descendant with class', cls, 'and matching predicate, instead got', result);
+      warn('Couldn\'t find unique descendant with class',
+          cls, 'and matching predicate, instead got', result);
       return null;
     }
-  }
-
-  // Returns first descendant that matches the specified tag and
-  // predicate.
-  function getFirstTag(parent, tag, predicate) {
-    return findFirst(predicate, parent.getElementsByTagName(tag));
   }
 
   // Checks that there is only one descendant element that matches the
@@ -972,34 +968,22 @@
   // tag, and invokes the function on it. Logs a warning if there
   // isn't exactly one.
   function withUniqueTag(parent, tag, predicate, f) {
-    var result = getUniqueTag(parent, tag, predicate);
+    const result = getUniqueTag(parent, tag, predicate);
     if (result) {
       return f(result);
     } else {
-      warn('Couldn\'t find unique descendant with tag', tag, 'and passing predicate');
+      warn('Couldn\'t find unique descendant with tag',
+          tag, 'and passing predicate');
       return null;
     }
-  }
-
-  // Given a predicate, returns the first element that matches. If predicate is
-  // null, then it is treated like 'all'.
-  function findFirst(predicate, array) {
-    var pred = checkedPredicate('findFirst', predicate ? predicate : all);
-    for (var i = 0; i < array.length; i++) {
-      var el = array[i];
-      if (pred(el)) {
-        return el;
-      }
-    }
-    return null;
   }
 
   // Given a predicate, returns the last element that matches. If predicate is
   // null, then it is treated like 'all'.
   function findLast(predicate, array) {
-    var pred = checkedPredicate('findLast', predicate ? predicate : all);
-    for (var i = array.length - 1; i >= 0; i--) {
-      var el = array[i];
+    const pred = checkedPredicate('findLast', predicate ? predicate : all);
+    for (let i = array.length - 1; i >= 0; i--) {
+      const el = array[i];
       if (pred(el)) {
         return el;
       }
@@ -1011,15 +995,17 @@
   // match, or multiple elements match, then nothing gets returned. If predicate
   // is null, then it is treated like 'all'.
   function findUnique(predicate, array) {
-    var pred = checkedPredicate('findUnique', predicate ? predicate : all);
-    var result = null;
-    for (var i = 0; i < array.length; i++) {
-      var el = array[i];
+    const pred = checkedPredicate('findUnique', predicate ? predicate : all);
+    let result = null;
+    for (let i = 0; i < array.length; i++) {
+      const el = array[i];
       if (pred(el)) {
         if (result === null) {
           result = el;
         } else {
-          debugWithStack('findUnique didn\'t find unique element because there are multiple results. Here are two:', result, el);
+          debugWithStack('findUnique didn\'t find unique element because ' +
+                         'there are multiple results. ' +
+                         'Here are two:', result, el);
           // Not unique, so return null.
           return null;
         }
@@ -1037,11 +1023,12 @@
   }
 
   function checkedPredicate(context, predicate) {
-    return x => {
-      var bool = predicate(x);
+    return (x) => {
+      const bool = predicate(x);
       if (typeof bool !== 'boolean') {
         // TODO: perhaps an exception would be better.
-        error('In ' + context + ', expected boolean result from predicate. Instead got', bool);
+        error('In ' + context + ', expected boolean result from predicate. ',
+            'Instead got', bool);
       }
       return bool;
     };
@@ -1056,14 +1043,8 @@
     return true;
   }
 
-  // Returns predicate which returns 'true' if text content matches wanted text.
-  function matchingText(txt) {
-    return function(el) {
-      return el.textContent === txt;
-    };
-  }
-
-  // Returns predicate which returns 'true' if the element has the specified class.
+  // Returns predicate which returns 'true' if the element has the
+  // specified class.
   function matchingClass(cls) {
     return function(el) {
       return el.classList.contains(cls);
@@ -1078,25 +1059,21 @@
     return document.createTextNode(x);
   }
 
-  function span() {
-    var args = [].slice.call(arguments);
-    args.unshift('span');
-    return element.apply(null, args);
+  function span(...rest) {
+    return element('span', ...rest);
   }
 
-  function div() {
-    var args = [].slice.call(arguments);
-    args.unshift('div');
-    return element.apply(null, args);
+  function div(...rest) {
+    return element('div', ...rest);
   }
 
-  function element(t, cls) {
-    var el = document.createElement(t);
+  function element(t, cls, ...children) {
+    const el = document.createElement(t);
     if (cls) {
       el.classList.add(cls);
     }
-    for (var i = 2; i < arguments.length; i++) {
-      el.appendChild(arguments[i]);
+    for (const child of children) {
+      el.appendChild(child);
     }
     return el;
   }
