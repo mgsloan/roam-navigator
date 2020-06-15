@@ -680,7 +680,8 @@
       });
     } else if (or(matchingClass('rm-ref-page-view-title'),
         matchingClass('rm-title-display'))(el)) {
-      withUniqueTag(el, 'span', all, click);
+      withUniqueTag(el, 'span',
+          not(matchingClass(TIP_TYPED_CLASS)), click);
     } else {
       click(el);
     }
@@ -1018,12 +1019,16 @@
     return result;
   }
 
+  // Inverts the result of a predicate.
+  function not(p) {
+    return (x) => !p(x);
+  }
+
   // Given two predicates, uses || to combine them.
   function or(p1, p2) {
-    return function(x) {
-      return checkedPredicate('left side of or', p1)(x) ||
-             checkedPredicate('right side of or', p2)(x);
-    };
+    return (x) =>
+      checkedPredicate('left side of or', p1)(x) ||
+      checkedPredicate('right side of or', p2)(x);
   }
 
   function checkedPredicate(context, predicate) {
