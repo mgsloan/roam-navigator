@@ -1,9 +1,18 @@
 /* TODO
+
  * `x` to extend
+
  * Fix scrolling
- * Fix navigation to shortcut with input focused
+
  * Ignore modifier presses (in todoist-shortcuts too)
+
  * Click pages on All Pages
+
+ * Get eslint to actually check stuff
+
+ * Fix navigation to shortcut with input focused, so that alt-g can be
+   re-enabled.
+
  */
 
 'use strict';
@@ -37,7 +46,8 @@
         handleNavigateKey(ev);
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
-        if (ev.altKey || !getInputTarget(ev)) {
+        // if (ev.altKey || !getInputTarget(ev)) {
+        if (!getInputTarget(ev)) {
           ev.stopImmediatePropagation();
           pressKeyCodesToIgnore = {};
           navigate();
@@ -564,6 +574,10 @@
   }
 
   function navigateToElement(ev, el) {
+    const inputTarget = getInputTarget(ev);
+    if (inputTarget) {
+      inputTarget.blur();
+    }
     if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
       click(el);
@@ -642,7 +656,14 @@
 
   // Simulate a mouse click.
   function click(el) {
-    var options = { bubbles: true, cancelable: true, view: window, target: el };
+    var options = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      target: el,
+      which: 1,
+      button: 0
+    };
     el.dispatchEvent(new MouseEvent('mousedown', options));
     el.dispatchEvent(new MouseEvent('mouseup', options));
     el.dispatchEvent(new MouseEvent('click', options));
@@ -650,7 +671,14 @@
 
   // Simulate a shift mouse click.
   function shiftClick(el) {
-    var options = { bubbles: true, cancelable: true, view: window, shiftKey: true };
+    var options = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      which: 1,
+      button: 0,
+      shiftKey: true
+    };
     document.body.dispatchEvent(createShiftEvent('keydown'));
     el.dispatchEvent(new MouseEvent('mousedown', options));
     el.dispatchEvent(new MouseEvent('mouseup', options));
