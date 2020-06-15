@@ -461,7 +461,7 @@
             for (let sl = MAX_NAVIGATE_PREFIX - 1; sl > 0; sl--) {
               const shortened = keys.slice(0, sl);
               if (noAliasing(shortened)) {
-                const found = true;
+                let found = true;
                 for (const otherKeys in groups) {
                   if (otherKeys !== keys &&
                       otherKeys.slice(0, sl) !== shortened) {
