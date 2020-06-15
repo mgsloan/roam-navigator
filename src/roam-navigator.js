@@ -196,7 +196,7 @@
         addBlocksToNavigateOptions(navigateOptions, rightSidebar, 's');
       });
 
-      debug(navigateOptions);
+      // Avoid infinite recursion. See comment on oldNavigateOptions.
       var different = false;
       for (var key in navigateOptions) {
         var oldOption = oldNavigateOptions[key];
@@ -209,14 +209,17 @@
         }
       }
       oldNavigateOptions = navigateOptions;
-      // Avoid infinite recursion. See comment on oldNavigateOptions.
       if (different) {
         debug('Different set of navigation options, so re-setting them.');
       } else {
         debug('Same set of navigation options, so not re-rendering.');
         return;
       }
+
+      // Initialize string of pressed keys.
       navigateKeysPressed = '';
+
+      // Finish navigation immediately if no tips to render.
       if (!rerenderTips() && finishNavigate) {
         finishNavigate();
       }
