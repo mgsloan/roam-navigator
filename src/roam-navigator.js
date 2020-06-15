@@ -1,7 +1,5 @@
 /* TODO
 
- * `x` to extend
-
  * Title editing
 
  * Click pages on All Pages
@@ -34,6 +32,9 @@
 
   // Key sequence prefix for sidebar blocks.
   const SIDEBAR_BLOCK_PREFIX = 's';
+
+  // Key sequence for last block.
+  const LAST_BLOCK_KEY = 'd';
 
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
@@ -161,9 +162,12 @@
     debug('Creating navigation shortcut tips');
     try {
       // Initialize a list of elements to bind to keys for
-      // navigation. Starts out with `s` so that this gets reserved as
-      // a prefix for sidebar block navigation.
-      const navigateItems = [{ mustBeKeys: 's', mustBeKeys: 'x' }];
+      // navigation. Starts out with some reserved keys that will
+      // later be removed.
+      const navigateItems = [{
+        mustBeKeys: SIDEBAR_BLOCK_PREFIX,
+        mustBeKeys: LAST_BLOCK_KEY,
+      }];
 
       // Add top level navigations to the list of navigateItems
       withClass(sidebar, 'log-button', logButton => {
@@ -210,16 +214,24 @@
       // Assign key sequences to all of the navigateItmes
       navigateOptions = assignKeysToItems(navigateItems);
 
+      // Remove reserved keys.
+      delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
+      delete navigateOptions[LAST_BLOCK_KEY];
+
       // Add key sequences for every block in main area.
       withUniqueClass(document, 'roam-article', all, article => {
-        addBlocks(navigateOptions, article, '');
+        const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
+        addBlocks(navigateOptions, article, lastBlock, '');
       });
 
       // Add key sequences for every block in sidebar.
-      delete navigateOptions['s'];
-      // delete navigateOptions['x'];
       withId('right-sidebar', rightSidebar => {
-        addBlocks(navigateOptions, rightSidebar, SIDEBAR_BLOCK_PREFIX);
+        const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
+        addBlocks(
+          navigateOptions,
+          rightSidebar,
+          lastBlock,
+          SIDEBAR_BLOCK_PREFIX);
       });
 
       // Avoid infinite recursion. See comment on oldNavigateOptions.
@@ -257,13 +269,18 @@
     }
   }
 
-  function addBlocks(navigateOptions, el, prefix) {
+  function addBlocks(navigateOptions, el, lastBlock, prefix) {
     const blocks = el.querySelectorAll('.rm-block-text, #block-input-ghost');
     const maxDigits = Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       const istr = i.toString();
-      const key = prefix + (istr.length === maxDigits ? istr : istr + ENTER_SYMBOL);
+      let key = prefix;
+      if (block === lastBlock) {
+        key += LAST_BLOCK_KEY;
+      } else {
+        key += istr.length === maxDigits ? istr : istr + ENTER_SYMBOL;
+      }
       navigateOptions[key] = {
         element: block,
         mustBeKeys: key,
