@@ -2,7 +2,7 @@
 
  * `x` to extend
 
- * Fix scrolling
+ * Title editing
 
  * Click pages on All Pages
 
@@ -543,13 +543,15 @@
       // Space to scroll down.  Shift+space to scroll up.
       if (ev.key === ' ') {
         keepGoing = true;
-        withUniqueClass(document, 'starred-pages', all, starredPages => {
-          if (ev.shiftKey) {
-            starredPages.scrollBy(0, starredPages.clientHeight / -2);
-          } else {
-            starredPages.scrollBy(0, starredPages.clientHeight / 2);
-          }
-        });
+        if (navigateKeysPressed && navigateKeysPressed[0] === 's') {
+          withId('roam-right-sidebar-content', rightSidebar => {
+            scrollUpOrDown(ev, rightSidebar);
+          });
+        } else {
+          withUniqueClass(document, 'roam-center', all, roamCenter => {
+            scrollUpOrDown(ev, roamCenter.firstChild);
+          });
+        }
       } else if (ev.keyCode === UP_ARROW_KEYCODE) {
         // Up arrow to scroll up a little bit.
         keepGoing = true;
@@ -622,6 +624,14 @@
       } else {
         click(el);
       }
+    }
+  }
+
+  function scrollUpOrDown(ev, el) {
+    if (ev.shiftKey) {
+      el.scrollBy(0, el.clientHeight / -2);
+    } else {
+      el.scrollBy(0, el.clientHeight / 2);
     }
   }
 
@@ -1019,6 +1029,12 @@
     'a > .' + TIP_CLASS + ' {',
     '  margin-top: 8px;',
     '  margin-left: -18px;',
+    '}',
+    '#roam-right-sidebar-content {',
+    '  position: relative;',
+    '}',
+    '#roam-right-sidebar-content .' + TIP_CLASS + ' {',
+    '  margin-left: 8px;',
     '}'
   ].join('\n'));
 
