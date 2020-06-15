@@ -16,7 +16,7 @@
 
 'use strict';
 {
-  const DEBUG = true;
+  const DEBUG = false;
 
   // Symbol used to indicate the enter button.
   const ENTER_SYMBOL = '⏎';
