@@ -11,11 +11,13 @@
   // Key to start navigation.  Alt + this key will also trigger navigation.
   const START_NAVIGATE_KEY = 'g';
 
-  // 'navigate' (g) attempts to assign keys to items based on their names. In
-  // some case there might not be a concise labeling. This sets the limit on key
-  // sequence length for things based on prefixes.
+  // 'navigate' (g) attempts to assign keys to items based on their
+  // names. In some case there might not be a concise labeling. This
+  // sets the limit on key sequence length for things based on
+  // prefixes.
   //
-  // Note that this isn't really a knob for users, as more than 2 won't fit well.
+  // Note that this isn't really a knob for users, as more than 2
+  // won't fit well.
   const MAX_NAVIGATE_PREFIX = 2;
 
   // MUTABLE. This is a set of keycodes to ignore for keypress / keyup
