@@ -31,6 +31,9 @@
             element.tagName == 'SELECT' ||
             element.tagName == 'TEXTAREA' ||
             element.isContentEditable;
+      if (keyIsModifier(ev)) {
+        return;
+      }
       if (isNavigating()) {
         pressKeyCodesToIgnore[ev.keyCode] = true;
         if (ev.key !== 'Shift') {
@@ -61,6 +64,13 @@
         delete pressKeyCodesToIgnore[ev.keyCode];
       }
     }, true);
+  }
+
+  function keyIsModifier(ev) {
+    return (ev.key === 'Shift') ||
+      (ev.key === 'Meta') ||
+      (ev.key === 'Control') ||
+      (ev.key === 'Alt');
   }
 
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
