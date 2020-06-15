@@ -270,7 +270,11 @@
   }
 
   function addBlocks(navigateOptions, el, lastBlock, prefix) {
-    const blocks = el.querySelectorAll('.rm-block-text, #block-input-ghost');
+    const blocks = el.querySelectorAll([
+      '.rm-block-text',
+      '.rm-ref-page-view-title',
+      '#block-input-ghost',
+    ].join(', '));
     const maxDigits = Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
@@ -645,6 +649,8 @@
           f(textarea);
         }
       });
+    } else if (matchingClass('rm-ref-page-view-title')(el)) {
+      withUniqueTag(el, 'span', all, click);
     } else {
       click(el);
     }
@@ -1097,7 +1103,10 @@
     '}',
     '#roam-right-sidebar-content .' + TIP_CLASS + ' {',
     '  margin-left: 8px;',
-    '}'
+    '}',
+    '.rm-ref-page-view-title .' + TIP_CLASS + ' {',
+    '  margin-left: -40px;',
+    '}',
   ].join('\n'));
 
   initialize();
