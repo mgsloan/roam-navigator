@@ -29,24 +29,15 @@
 
   function initialize() {
     document.addEventListener('keydown', ev => {
-      const element = ev.target || ev.srcElement;
-      const targetIsInput =
-            element.tagName == 'INPUT' ||
-            element.tagName == 'SELECT' ||
-            element.tagName == 'TEXTAREA' ||
-            element.isContentEditable;
       if (keyIsModifier(ev)) {
         return;
       }
       if (isNavigating()) {
         pressKeyCodesToIgnore[ev.keyCode] = true;
-        if (ev.key !== 'Shift') {
-          ev.stopImmediatePropagation();
-        }
         handleNavigateKey(ev);
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
-        if (ev.altKey || !targetIsInput) {
+        if (ev.altKey || !getInputTarget(ev)) {
           ev.stopImmediatePropagation();
           pressKeyCodesToIgnore = {};
           navigate();
@@ -54,17 +45,17 @@
         }
       }
       delete pressKeyCodesToIgnore[ev.keyCode];
-    });
+    }, true);
     document.addEventListener('keypress', ev => {
       if (isNavigating() || pressKeyCodesToIgnore[ev.keyCode]) {
         ev.stopImmediatePropagation();
-        ev.preventDefault()
+        ev.preventDefault();
       }
     }, true);
     document.addEventListener('keyup', ev => {
       if (isNavigating() || pressKeyCodesToIgnore[ev.keyCode]) {
         ev.stopImmediatePropagation();
-        ev.preventDefault()
+        ev.preventDefault();
         delete pressKeyCodesToIgnore[ev.keyCode];
       }
     }, true);
@@ -75,6 +66,18 @@
       (ev.key === 'Meta') ||
       (ev.key === 'Control') ||
       (ev.key === 'Alt');
+  }
+
+  function getInputTarget(ev) {
+    const element = ev.target || ev.srcElement;
+    if (element.tagName == 'INPUT' ||
+        element.tagName == 'SELECT' ||
+        element.tagName == 'TEXTAREA' ||
+        element.isContentEditable) {
+      return element;
+    } else {
+      return null;
+    }
   }
 
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
@@ -500,9 +503,7 @@
     var keepGoing = false;
     try {
       // Space to scroll down.  Shift+space to scroll up.
-      if (ev.key === 'Shift') {
-        keepGoing = true;
-      } else if (ev.key === ' ') {
+      if (ev.key === ' ') {
         keepGoing = true;
         withUniqueClass(document, 'starred-pages', all, starredPages => {
           if (ev.shiftKey) {
