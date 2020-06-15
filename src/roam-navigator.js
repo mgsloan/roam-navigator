@@ -93,6 +93,7 @@
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
+  const GHOST_CONTAINER_CLASS = 'roam_navigator_ghost_container';
 
   // Keycode constants
   const UP_ARROW_KEYCODE = 38;
@@ -235,12 +236,23 @@
     const blocks = el.querySelectorAll('.rm-block-text, #block-input-ghost');
     const maxDigits = Math.floor(Math.log10(blocks.length - 1)) + 1;
     for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
       const istr = i.toString();
       const key = prefix + (istr.length === maxDigits ? istr : istr + ENTER_SYMBOL);
       navigateOptions[key] = {
-        element: blocks[i],
+        element: block,
         mustBeKeys: key,
       };
+      // HACK: adds a class to allow specific layout for
+      // #block-input-ghost case
+      if (block.id === 'block-input-ghost') {
+        const parentContainer = findParent(block, matchingClass('flex-h-box'));
+        if (parentContainer) {
+          parentContainer.classList.add(GHOST_CONTAINER_CLASS);
+        } else {
+          warn('Couldn\'t find expected parent container for', block);
+        }
+      }
     }
   }
 
@@ -262,7 +274,7 @@
           if (prefix.length > 0) {
             tip.prepend(span(TIP_TYPED_CLASS, text(prefix)));
           }
-          if (matchingClass('rm-block-text')(el)) {
+          if (matchingClass('rm-block-text')(el) || el.id === 'block-input-ghost') {
             findParent(el, matchingClass('flex-h-box')).prepend(tip);
           } else {
             el.prepend(tip);
@@ -990,10 +1002,11 @@
     '.log-button .' + TIP_CLASS + ' {',
     '  margin-top: 0;',
     '}',
-    '.roam-block-container .' + TIP_CLASS + ' {',
+    '.' + GHOST_CONTAINER_CLASS + ' .' + TIP_CLASS +
+      ', .roam-block-container .' + TIP_CLASS + ' {',
     '  margin-top: 4px;',
     '  margin-left: 0;',
-    '}'
+    '}',
   ].join('\n'));
 
   initialize();
