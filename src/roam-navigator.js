@@ -234,7 +234,7 @@
 
   function addBlocksToNavigateOptions(navigateOptions, el, prefix) {
     const blocks = el.querySelectorAll('.rm-block-text, #block-input-ghost');
-    const maxDigits = Math.floor(Math.log10(blocks.length - 1)) + 1;
+    const maxDigits = Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       const istr = i.toString();
