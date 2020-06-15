@@ -45,18 +45,20 @@
   // won't fit well.
   const MAX_NAVIGATE_PREFIX = 2;
 
-  // MUTABLE. This is a set of keycodes to ignore for keypress / keyup
+  // MUTABLE. This is a set of keys to ignore for keypress / keyup
   // events. This solves an issue where keypresses involved in
   // navigation can get handled elsewhere (especially textareas).
-  let pressKeyCodesToIgnore = {};
+  let keysToIgnore = {};
 
   function initialize() {
     document.addEventListener('keydown', ev => {
+      debug('keydown', ev);
+      debug('keysToIgnore', keysToIgnore);
       if (keyIsModifier(ev)) {
         return;
       }
       if (isNavigating()) {
-        pressKeyCodesToIgnore[ev.keyCode] = true;
+        keysToIgnore[ev.key] = true;
         handleNavigateKey(ev);
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
@@ -64,24 +66,28 @@
         if (!getInputTarget(ev)) {
           ev.stopImmediatePropagation();
           ev.preventDefault();
-          pressKeyCodesToIgnore = {};
+          keysToIgnore = {};
           navigate();
           return;
         }
       }
-      delete pressKeyCodesToIgnore[ev.keyCode];
+      delete keysToIgnore[ev.key];
     }, true);
     document.addEventListener('keypress', ev => {
-      if (isNavigating() || pressKeyCodesToIgnore[ev.keyCode]) {
+      debug('keypress', ev);
+      debug('keysToIgnore', keysToIgnore);
+      if (isNavigating() || keysToIgnore[ev.key]) {
         ev.stopImmediatePropagation();
         ev.preventDefault();
       }
     }, true);
     document.addEventListener('keyup', ev => {
-      if (isNavigating() || pressKeyCodesToIgnore[ev.keyCode]) {
+      debug('keyup', ev);
+      debug('keysToIgnore', keysToIgnore);
+      if (isNavigating() || keysToIgnore[ev.key]) {
         ev.stopImmediatePropagation();
         ev.preventDefault();
-        delete pressKeyCodesToIgnore[ev.keyCode];
+        delete keysToIgnore[ev.key];
       }
     }, true);
   }
@@ -108,12 +114,6 @@
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
-
-  // Keycode constants
-  const UP_ARROW_KEYCODE = 38;
-  const DOWN_ARROW_KEYCODE = 40;
-  const BACKSPACE_KEYCODE = 8;
-  const ENTER_KEYCODE = 13;
 
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
@@ -556,7 +556,6 @@
   }
 
   function handleNavigateKey(ev) {
-    debug('handleNavigateKey', ev);
     var keepGoing = false;
     try {
       // Space to scroll down.  Shift+space to scroll up.
@@ -571,19 +570,19 @@
             scrollUpOrDown(ev, roamCenter.firstChild);
           });
         }
-      } else if (ev.keyCode === UP_ARROW_KEYCODE) {
+      } else if (ev.key === 'ArrowUp') {
         // Up arrow to scroll up a little bit.
         keepGoing = true;
         withId('starred-pages', starredPages => {
           starredPages.scrollBy(0, -40);
         });
-      } else if (ev.keyCode === DOWN_ARROW_KEYCODE) {
+      } else if (ev.key === 'ArrowDown') {
         // Down arrow to scroll down a little bit.
         keepGoing = true;
         withId('starred-pages', starredPages=> {
           starredPages.scrollBy(0, 40);
         });
-      } else if (ev.keyCode === BACKSPACE_KEYCODE) {
+      } else if (ev.key === 'Backspace') {
         // Backspace removes keys from list of pressed keys.
         navigateKeysPressed = navigateKeysPressed.slice(0, -1);
         keepGoing = rerenderTips();
@@ -597,7 +596,7 @@
       */
       } else {
         var char = ev.key.toLowerCase();
-        if (ev.keyCode === ENTER_KEYCODE) {
+        if (ev.key === 'Enter') {
           char = ENTER_SYMBOL;
         }
         if (char.length === 1 &&
