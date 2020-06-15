@@ -17,8 +17,23 @@
 {
   const DEBUG = false;
 
+  // Symbol used to indicate the enter button.
+  const ENTER_SYMBOL = '⏎';
+
   // Key to start navigation.  Alt + this key will also trigger navigation.
   const START_NAVIGATE_KEY = 'g';
+
+  // Key sequence to navigate to daily notes.
+  const DAILY_NOTES_KEY = 'g';
+
+  // Key sequence to navigate to graph overview.
+  const GRAPH_OVERVIEW_KEY = 'o' + ENTER_SYMBOL;
+
+  // Key sequence to navigate to all pages view.
+  const ALL_PAGES_KEY = 'a';
+
+  // Key sequence prefix for sidebar blocks.
+  const SIDEBAR_BLOCK_PREFIX = 's';
 
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
@@ -98,8 +113,6 @@
   const BACKSPACE_KEYCODE = 8;
   const ENTER_KEYCODE = 13;
 
-  const ENTER_SYMBOL = '⏎';
-
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
   let finishNavigate = null;
@@ -154,12 +167,25 @@
       // Add top level navigations to the list of navigateItems
       withClass(sidebar, 'log-button', logButton => {
         const text = logButton.innerText;
-        if (text === 'DAILY NOTES' || text === 'g\nDAILY NOTES') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'g' });
-        } else if (text === 'GRAPH OVERVIEW' || text === 'o' + ENTER_SYMBOL + '\nGRAPH OVERVIEW') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'o' + ENTER_SYMBOL });
-        } else if (text === 'ALL PAGES' || text === 'a\nALL PAGES') {
-          navigateItems.push({ element: logButton, mustBeKeys: 'a' });
+        if (text === 'DAILY NOTES' ||
+            text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
+          navigateItems.push({
+            element: logButton,
+            mustBeKeys: DAILY_NOTES_KEY,
+            keepGoing: true,
+          });
+        } else if (text === 'GRAPH OVERVIEW' ||
+                   text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
+          navigateItems.push({
+            element: logButton,
+            mustBeKeys: GRAPH_OVERVIEW_KEY,
+          });
+        } else if (text === 'ALL PAGES' ||
+                   text === ALL_PAGES_KEY + '\nALL PAGES') {
+          navigateItems.push({
+            element: logButton,
+            mustBeKeys: ALL_PAGES_KEY,
+          });
         } else {
           error('Unhandled .log-button:', text);
         }
@@ -185,13 +211,13 @@
 
       // Add key sequences for every block in main area.
       withUniqueClass(document, 'roam-article', all, article => {
-        addBlocksToNavigateOptions(navigateOptions, article, '');
+        addBlocks(navigateOptions, article, '');
       });
 
       // Add key sequences for every block in sidebar.
       delete navigateOptions['s'];
       withId('right-sidebar', rightSidebar => {
-        addBlocksToNavigateOptions(navigateOptions, rightSidebar, 's');
+        addBlocks(navigateOptions, rightSidebar, SIDEBAR_BLOCK_PREFIX);
       });
 
       // Avoid infinite recursion. See comment on oldNavigateOptions.
@@ -229,7 +255,7 @@
     }
   }
 
-  function addBlocksToNavigateOptions(navigateOptions, el, prefix) {
+  function addBlocks(navigateOptions, el, prefix) {
     const blocks = el.querySelectorAll('.rm-block-text, #block-input-ghost');
     const maxDigits = Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
     for (let i = 0; i < blocks.length; i++) {
