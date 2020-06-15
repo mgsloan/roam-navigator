@@ -162,7 +162,7 @@
       // Initialize a list of elements to bind to keys for
       // navigation. Starts out with `s` so that this gets reserved as
       // a prefix for sidebar block navigation.
-      const navigateItems = [{ mustBeKeys: 's' }];
+      const navigateItems = [{ mustBeKeys: 's', mustBeKeys: 'x' }];
 
       // Add top level navigations to the list of navigateItems
       withClass(sidebar, 'log-button', logButton => {
@@ -216,6 +216,7 @@
 
       // Add key sequences for every block in sidebar.
       delete navigateOptions['s'];
+      // delete navigateOptions['x'];
       withId('right-sidebar', rightSidebar => {
         addBlocks(navigateOptions, rightSidebar, SIDEBAR_BLOCK_PREFIX);
       });
@@ -568,6 +569,14 @@
         // Backspace removes keys from list of pressed keys.
         navigateKeysPressed = navigateKeysPressed.slice(0, -1);
         keepGoing = rerenderTips();
+      /* TODO
+      } else if (ev.key === 'x') {
+        withUniqueClass(document, 'roam-article', all, roamArticle => {
+          extendWithNewBlock(ev, roamArticle.firstChild)
+        });
+      } else if (ev.key === 'X') {
+        withId('roam-right-sidebar-content', extendWithNewBlock);
+      */
       } else {
         var char = ev.key.toLowerCase();
         if (ev.keyCode === ENTER_KEYCODE) {
@@ -603,7 +612,7 @@
     }
   }
 
-  function navigateToElement(ev, el) {
+  function navigateToElement(ev, el, f) {
     const inputTarget = getInputTarget(ev);
     if (inputTarget) {
       inputTarget.blur();
@@ -615,15 +624,12 @@
         textarea.focus();
         const lastPosition = textarea.value.length;
         textarea.setSelectionRange(lastPosition, lastPosition);
+        if (f) {
+          f(textarea);
+        }
       });
     } else {
-      if (ev.shiftKey) {
-        // FIXME: doesn't work, opens link in new tab.
-        // shiftClick(el);
-        click(el);
-      } else {
-        click(el);
-      }
+      click(el);
     }
   }
 
@@ -634,6 +640,16 @@
       el.scrollBy(0, el.clientHeight / 2);
     }
   }
+
+  /* TODO
+  function extendWithNewBlock(ev, el) {
+    const lastBlock = getLastClass(el, 'rm-block-text');
+    navigateToElement(ev, lastBlock, textarea => {
+      const enterEvent = createKeyEvent('keypress', 'z', 0);
+      textarea.dispatchEvent(enterEvent);
+    });
+  }
+  */
 
   function persistentlyFindTextArea(blockParent, n, f) {
     const textarea = getUniqueTag(blockParent, 'textarea');
@@ -725,11 +741,14 @@
   }
 
   function createShiftEvent(type) {
+    return createKeyEvent(type, 'Shift', 92);
+  }
+
+  function createKeyEvent(type, key, code) {
     let keyEvent = new Event(type);
-    keyEvent.key = 'Shift';
-    keyEvent.keyCode = 92;
-    keyEvent.code = 'ShiftRight';
-    keyEvent.which = 92;
+    keyEvent.key = key;
+    keyEvent.keyCode = code;
+    keyEvent.which = code;
     return keyEvent;
   }
 
@@ -919,6 +938,32 @@
       warn('Couldn\'t find unique descendant with tag', tag, 'and passing predicate');
       return null;
     }
+  }
+
+  // Given a predicate, returns the first element that matches. If predicate is
+  // null, then it is treated like 'all'.
+  function findFirst(predicate, array) {
+    var pred = checkedPredicate('findFirst', predicate ? predicate : all);
+    for (var i = 0; i < array.length; i++) {
+      var el = array[i];
+      if (pred(el)) {
+        return el;
+      }
+    }
+    return null;
+  }
+
+  // Given a predicate, returns the last element that matches. If predicate is
+  // null, then it is treated like 'all'.
+  function findLast(predicate, array) {
+    var pred = checkedPredicate('findLast', predicate ? predicate : all);
+    for (var i = array.length - 1; i >= 0; i--) {
+      var el = array[i];
+      if (pred(el)) {
+        return el;
+      }
+    }
+    return null;
   }
 
   // Given a predicate, returns the only element that matches. If no elements
