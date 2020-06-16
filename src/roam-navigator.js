@@ -15,7 +15,7 @@
 {
   const DEBUG = false;
 
-  // Symbol used to indicate the enter button.
+  // Symbol used to indicate the enter key.
   const ENTER_SYMBOL = '⏎';
 
   // Key to start navigation.  Alt + this key will also trigger navigation.
@@ -184,7 +184,6 @@
           navigateItems.push({
             element: logButton,
             mustBeKeys: DAILY_NOTES_KEY,
-            keepGoing: true,
           });
         } else if (text === 'GRAPH OVERVIEW' ||
                    text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
