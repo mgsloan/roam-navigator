@@ -1,7 +1,7 @@
 # Roam Navigator
 
-When you may Roam :metal:, it is essential to have an efficient
-navigator.
+Wherever you may [Roam](https://roamresearch.com/) :metal:, it is
+essential to have an efficient navigator.
 
 Navigation mode is initiated by pressing `alt-g`, or just `g` when not
 editing text. Navigation keys will then appear, which can be typed to
@@ -19,5 +19,5 @@ While navigating, the following shortcuts will also be available:
 
 * `Up Arrow` to scroll up a bit
 
-* `s` followed by any of the scrolling bindings to instead scroll the
-  sidebar.
+* To scroll the sidebar, first type `s` followed one of the above
+  scrolling shortcuts.
