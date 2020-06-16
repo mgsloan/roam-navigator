@@ -7,9 +7,6 @@
  * When switching main focus, re-enable navigation mode. So, use
    keepGoing, but have it add new tips when the main page changes.
 
- * Fix navigation to shortcut with input focused, so that alt-g can be
-   re-enabled.
-
  * Click pages on All Pages
 
  */
@@ -69,7 +66,6 @@
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
         if (ev.altKey || !getInputTarget(ev)) {
-        // if (!getInputTarget(ev)) {
           ev.stopImmediatePropagation();
           ev.preventDefault();
           keysToIgnore = {};
@@ -684,6 +680,7 @@
           not(matchingClass(TIP_TYPED_CLASS)), click);
     } else {
       click(el);
+      setTimeout(() => click(el));
     }
   }
 
