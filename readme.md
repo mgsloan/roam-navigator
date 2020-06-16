@@ -1,22 +1,23 @@
 # Roam Navigator
 
-When you Roam freely, it is essential to have an efficient navigator.
+When you may Roam :metal:, it is essential to have an efficient
+navigator.
 
-## Why is this not part of the Roam Toolkit? Answer:
+Navigation mode is initiated by pressing `alt-g`, or just `g` when not
+editing text. Navigation keys will then appear, which can be typed to
+select the corresponding elements:
 
-I'd already written very similar code in my [todoist-shortcuts][]
-extension. I considered making this an addition to [roam-toolkit][],
-but on initial skim it has very different conventions, probably
-superior ones, such as using TypeScript, [not using mousetrap][], not
-having key sequences with modifiers held, and supporting user
-configuration.
+![screenshot of Roam with navigation mode activated](etc/screenshot.png)
 
-Quite simply, since I have a bunch of existing code I'm familiar with,
-it will take a fraction of the effort for me to copy-modify it for
-this purpose, when compared with adding it to an existing and
-excellent extension such as [roam-toolkit][] while fitting in with the
-conventions of that project.
+While navigating, the following shortcuts will also be available:
 
-[todoist-shortcuts]: https://github.com/mgsloan/todoist-shortcuts
-[roam-toolkit]: https://github.com/roam-unofficial/roam-toolkit
-[not using mousetrap]: https://github.com/roam-unofficial/roam-toolkit/issues/68
+* `Space` to scroll down half a page
+
+* `Shift+Space` to scroll up half a page
+
+* `Down Arrow` to scroll down a bit
+
+* `Up Arrow` to scroll up a bit
+
+* `s` followed by any of the scrolling bindings to instead scroll the
+  sidebar.
