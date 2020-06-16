@@ -589,7 +589,7 @@
       // Space to scroll down.  Shift+space to scroll up.
       if (ev.key === ' ') {
         keepGoing = true;
-        if (navigateKeysPressed && navigateKeysPressed[0] === 's') {
+        if (navigateKeysPressed.startsWith(SIDEBAR_BLOCK_PREFIX)) {
           withId('roam-right-sidebar-content', (rightSidebar) => {
             scrollUpOrDown(ev, rightSidebar);
           });
