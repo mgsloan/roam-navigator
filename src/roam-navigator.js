@@ -1093,7 +1093,7 @@
     '  font-family: monospace;',
     '  font-weight: normal;',
     '  font-size: 14px;',
-    '  color: #dd4b39;',
+    '  color: #b53728;',
     '  z-index: 2147483647;',
     '}',
     '.' + TIP_TYPED_CLASS + ' {',
