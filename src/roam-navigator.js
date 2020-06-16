@@ -1,5 +1,7 @@
 /* TODO
 
+ * Improve position of the navigation keys.
+
  * Support shift clicking links to open in sidebar.  Attempted to add
    this but instead it opened links in new tabs for some unknown
    reason.
