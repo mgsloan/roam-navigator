@@ -358,8 +358,8 @@
   }
 
   function closeSidebarIfOpened() {
-    withUniqueClass(document, 'roam-sidebar-content', all, (sidebar) => {
-      mouseOut(sidebar);
+    withUniqueClass(document, 'roam-article', all, (main) => {
+      mouseOver(main);
     });
   }
 
@@ -746,17 +746,6 @@
       target: el,
     };
     el.dispatchEvent(new MouseEvent('mouseover', options));
-  }
-
-  // Simulate a mouse over event.
-  function mouseOut(el) {
-    const options = {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-      target: el,
-    };
-    el.dispatchEvent(new MouseEvent('mouseout', options));
   }
 
   // Simulate a mouse click.
