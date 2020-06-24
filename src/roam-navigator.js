@@ -231,6 +231,18 @@
         });
       });
 
+      const rightSidebarContent = getById('roam-right-sidebar-content');
+      if (rightSidebarContent) {
+        withId('right-sidebar', (rightSidebar) => {
+          withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (closeButton) => {
+            navigateItems.push({
+              element: closeButton,
+              mustBeKeys: 'sc',
+            });
+          });
+        });
+      }
+
       // Assign key sequences to all of the navigateItmes
       navigateOptions = assignKeysToItems(navigateItems);
 
@@ -336,6 +348,8 @@
           if (matchingClass('rm-block-text')(el) ||
               el.id === 'block-input-ghost') {
             findParent(el, matchingClass('flex-h-box')).prepend(tip);
+          } else if (matchingClass('bp3-button')(el)) {
+            findParent(el, matchingClass('flex-h-box')).firstElementChild.after(tip);
           } else {
             el.prepend(tip);
           }
@@ -1098,6 +1112,9 @@
     '}',
     '#roam-right-sidebar-content .' + TIP_CLASS + ' {',
     '  left: 0;',
+    '}',
+    '#right-sidebar > .flex-h-box > .' + TIP_CLASS + ' {',
+    '  position: initial;',
     '}',
   ].join('\n'));
 
