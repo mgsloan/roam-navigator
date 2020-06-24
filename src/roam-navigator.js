@@ -1,16 +1,3 @@
-/* TODO
-
- * Support shift clicking links to open in sidebar.  Attempted to add
-   this but instead it opened links in new tabs for some unknown
-   reason.
-
- * When switching main focus, re-enable navigation mode. So, use
-   keepGoing, but have it add new tips when the main page changes.
-
- * Click pages on All Pages
-
- */
-
 'use strict';
 {
   const DEBUG = false;
