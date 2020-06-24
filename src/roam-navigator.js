@@ -1,7 +1,5 @@
 /* TODO
 
- * Improve position of the navigation keys.
-
  * Support shift clicking links to open in sidebar.  Attempted to add
    this but instead it opened links in new tabs for some unknown
    reason.
@@ -1077,8 +1075,8 @@
   addCss([
     '.' + TIP_CLASS + ' {',
     '  position: absolute;',
+    '  left: 4px;',
     '  margin-top: 4px;',
-    '  margin-left: 0;',
     '  width: 22px;',
     '  font-family: monospace;',
     '  font-weight: normal;',
@@ -1091,24 +1089,15 @@
     '}',
     '.log-button .' + TIP_CLASS + ' {',
     '  margin-top: 0;',
-    '  margin-left: -18px;',
     '}',
     'a > .' + TIP_CLASS + ' {',
     '  margin-top: 8px;',
-    '  margin-left: -18px;',
     '}',
     '#roam-right-sidebar-content {',
     '  position: relative;',
     '}',
     '#roam-right-sidebar-content .' + TIP_CLASS + ' {',
-    '  margin-left: 8px;',
-    '}',
-    '.rm-ref-page-view-title .' + TIP_CLASS + ' {',
-    '  margin-left: -40px;',
-    '}',
-    '.rm-title-display .' + TIP_CLASS + ' {',
-    '  margin-top: 17px;',
-    '  margin-left: -20px;',
+    '  left: 0;',
     '}',
   ].join('\n'));
 
