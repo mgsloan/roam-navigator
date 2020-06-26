@@ -1154,6 +1154,13 @@
     '.rm-title-display .' + TIP_CLASS + ' {',
     '  margin-top: 14px;',
     '}',
+    '#all-pages-search .table {',
+    '  position: relative;',
+    '}',
+    '.rm-pages-title-text .' + TIP_CLASS + ' {',
+    '  left: 10px;',
+    '  margin-top: 0px;',
+    '}',
   ].join('\n'));
 
   initialize();
