@@ -1,5 +1,6 @@
 'use strict';
 {
+  // Set to true to enable debug logging
   const DEBUG = false;
 
   // Symbol used to indicate the enter key.
