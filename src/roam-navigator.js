@@ -264,6 +264,12 @@
             SIDEBAR_BLOCK_PREFIX);
       });
 
+      // Add key sequences for every page in "All Pages" list.
+      const allPagesSearch = getById('all-pages-search');
+      if (allPagesSearch) {
+        addBlocks(navigateOptions, allPagesSearch, null, '')
+      }
+
       // Avoid infinite recursion. See comment on oldNavigateOptions.
       let different = false;
       for (const key of Object.keys(navigateOptions)) {
@@ -305,6 +311,7 @@
     const blocks = el.querySelectorAll([
       '.rm-block-text',
       '.rm-ref-page-view-title',
+      '.rm-pages-title-text',
       '#block-input-ghost',
     ].join(', '));
     const maxDigits =
@@ -690,6 +697,8 @@
         matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span',
           not(matchingClass(TIP_TYPED_CLASS)), clickFunc);
+    } else if (matchingClass('rm-pages-title-text')(el)) {
+      clickFunc(el);
     } else {
       withUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)), (innerDiv) => {
         clickFunc(innerDiv);
