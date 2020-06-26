@@ -1,9 +1,10 @@
 *~
 .#*
-node_modules
+/node_modules
 .dir-locals.el
 .git/
-todoist-shortcuts.zip
-etc/secrets.json
-etc/notes.md
+/todoist-shortcuts.zip
+/etc/secrets.json
+/etc/notes.md
+/etc/screenshot-sizer.sh
 /package-lock.json
