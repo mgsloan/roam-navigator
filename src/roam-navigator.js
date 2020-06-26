@@ -322,6 +322,7 @@
   }
 
   function addBlocks(navigateOptions, el, lastBlock, prefix) {
+    var offset = 0;
     const blocks = el.querySelectorAll([
       '.rm-block-text',
       '.rm-ref-page-view-title',
@@ -333,10 +334,11 @@
           Math.floor(Math.log10(Math.max(1, blocks.length - 1))) + 1;
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
-      const istr = i.toString();
+      const istr = (i + offset).toString();
       let key = prefix;
       if (block === lastBlock) {
         key += LAST_BLOCK_KEY;
+        offset -= 1;
       } else {
         key += i == 0 || istr.length === maxDigits ? istr : istr + ENTER_SYMBOL;
       }
