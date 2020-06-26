@@ -215,7 +215,8 @@
       });
 
       // Add article title editing to navigateItems
-      withUniqueClass(document, 'roam-article', all, (article) => {
+      const article = getUniqueClass(document, 'roam-article');
+      if (article) {
         withUniqueClass(article, 'rm-title-display', all, (title) => {
           // Can't edit title on log pages, so don't include it in
           // that case.
@@ -226,7 +227,7 @@
             });
           }
         });
-      });
+      }
 
       const rightSidebarContent = getById('roam-right-sidebar-content');
       if (rightSidebarContent) {
@@ -248,10 +249,10 @@
       delete navigateOptions[LAST_BLOCK_KEY];
 
       // Add key sequences for every block in main area.
-      withUniqueClass(document, 'roam-article', all, (article) => {
+      if (article) {
         const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
         addBlocks(navigateOptions, article, lastBlock, '');
-      });
+      }
 
       // Add key sequences for every block in sidebar.
       withId('right-sidebar', (rightSidebar) => {
