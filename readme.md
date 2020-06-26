@@ -24,3 +24,27 @@ While navigating, the following shortcuts will also be available:
 
 * To scroll the sidebar, first type `s` followed one of the above
   scrolling shortcuts.
+
+# How to install
+
+This extension has not yet been published to Chrome Webstore or
+Firefox Add-ons, since there's a possibility it might get directly
+included in the [Roam Toolkit
+extension](https://github.com/roam-unofficial/roam-toolkit) - see
+[this issue in Roam Toolkit's
+tracker](https://github.com/roam-unofficial/roam-toolkit/issues/91).
+So, in the meantime, it can only be used as an unpacked extension:
+
+## Chrome
+
+1. Go to: [**chrome://extensions**](chrome://extensions)
+2. Toggle: "**developer mode**" on.
+3. Click on: "**Load unpacked**"
+4. Select the **src** folder in this repo (no build step needed!)
+
+## Firefox
+
+1. Go to: [**about:debugging**](about:debugging)
+2. Select: "**Enable add-on debugging**"
+3. Click on: "**Load Temporary Add-on…**"
+4. Select the **src** folder in this repo (no build step needed!)
