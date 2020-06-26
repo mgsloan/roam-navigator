@@ -33,6 +33,9 @@
   // Key to scroll a half page down and half page up with shift.
   const BIG_SCROLL_KEY = ' ';
 
+  // Key to toggle left sidebar visibility.
+  const LEFT_SIDEBAR_KEY = '`';
+
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
   // sets the limit on key sequence length for things based on
@@ -158,7 +161,7 @@
   // displayed. It overrides the keyboard handler such that it temporarily
   // expects a key.
   function setupNavigate(sidebar) {
-    ensureSidebarOpen();
+    // ensureSidebarOpen();
     document.body.classList.add(NAVIGATE_CLASS);
     debug('Creating navigation shortcut tips');
     try {
@@ -222,6 +225,29 @@
           });
         });
       }
+
+      withUniqueClass(document, 'roam-topbar', all, (topbar) => {
+        const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open']
+        const sidebarButton = getUniqueClass(topbar, buttonClasses);
+        if (sidebarButton) {
+          navigateItems.push({
+            element: sidebarButton,
+            mustBeKeys: LEFT_SIDEBAR_KEY,
+            keepGoing: true
+          });
+        }
+      });
+
+      withUniqueClass(document, 'roam-sidebar-container', all, leftSidebar => {
+        const sidebarButton = getUniqueClass(leftSidebar, 'bp3-icon-menu-closed');
+        if (sidebarButton) {
+          navigateItems.push({
+            element: sidebarButton,
+            mustBeKeys: LEFT_SIDEBAR_KEY,
+            keepGoing: true
+          });
+        }
+      });
 
       // Assign key sequences to all of the navigateItmes
       navigateOptions = assignKeysToItems(navigateItems);
@@ -318,7 +344,7 @@
 
   // Add in tips to tell the user what key to press.
   function rerenderTips() {
-    ensureSidebarOpen();
+    // ensureSidebarOpen();
     removeOldTips();
     let renderedAny = false;
     for (const key of Object.keys(navigateOptions)) {
@@ -349,6 +375,9 @@
     return renderedAny;
   }
 
+  /* TODO: remove this or add option for enabling popping sidebar
+     open on navigate (I found it jarring in practice).
+
   function ensureSidebarOpen() {
     withUniqueClass(document, 'roam-topbar', all, (toolbar) => {
       const menu = getUniqueClass(toolbar, 'bp3-icon-menu');
@@ -357,6 +386,7 @@
       }
     });
   }
+  */
 
   function closeSidebarIfOpened() {
     withUniqueClass(document, 'roam-center', all, (main) => {
@@ -681,6 +711,8 @@
         matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span',
           not(matchingClass(TIP_TYPED_CLASS)), clickFunc);
+    } else if (matchingClass('bp3-icon-menu')(el)) {
+      mouseOver(el);
     } else {
       const innerDiv = getUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)));
       if (innerDiv) {
