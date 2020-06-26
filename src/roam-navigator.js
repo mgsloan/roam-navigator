@@ -338,7 +338,7 @@
       if (block === lastBlock) {
         key += LAST_BLOCK_KEY;
       } else {
-        key += istr.length === maxDigits ? istr : istr + ENTER_SYMBOL;
+        key += i == 0 || istr.length === maxDigits ? istr : istr + ENTER_SYMBOL;
       }
       navigateOptions[key] = {
         element: block,
