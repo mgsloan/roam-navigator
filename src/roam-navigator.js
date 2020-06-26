@@ -681,13 +681,14 @@
         matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span',
           not(matchingClass(TIP_TYPED_CLASS)), clickFunc);
-    } else if (matchingClass('rm-pages-title-text')(el)) {
-      clickFunc(el);
     } else {
-      withUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)), (innerDiv) => {
+      const innerDiv = getUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)));
+      if (innerDiv) {
         clickFunc(innerDiv);
         setTimeout(() => clickFunc(innerDiv));
-      });
+      } else {
+        clickFunc(el);
+      }
     }
   }
 
