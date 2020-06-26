@@ -72,6 +72,7 @@
       }
       delete keysToIgnore[ev.key];
     }, true);
+
     document.addEventListener('keypress', (ev) => {
       debug('keypress', ev);
       debug('keysToIgnore', keysToIgnore);
@@ -80,6 +81,7 @@
         ev.preventDefault();
       }
     }, true);
+
     document.addEventListener('keyup', (ev) => {
       debug('keyup', ev);
       debug('keysToIgnore', keysToIgnore);
@@ -89,6 +91,18 @@
         delete keysToIgnore[ev.key];
       }
     }, true);
+
+    // Watch for DOM changes, to know when to re-render tips.
+    const observer = new MutationObserver(() => {
+      debug('DOM mutation occurred');
+      if (isNavigating()) {
+        setupNavigate();
+      }
+    });
+    observer.observe(document, {
+      childList: true,
+      subtree: true,
+    });
   }
 
   function keyIsModifier(ev) {
@@ -131,28 +145,17 @@
   // Switches to a navigation mode, where navigation targets are annotated
   // with letters to press to click.
   function navigate() {
-    withUniqueClass(document, 'roam-sidebar-container', all, (sidebar) => {
-      // Since the projects list can get reconstructed, watch for changes and
-      // reconstruct the shortcut tips.  A function to unregister the mutation
-      // observer is passed in.
-      oldNavigateOptions = [];
+    // Since the projects list can get reconstructed, watch for changes and
+    // reconstruct the shortcut tips.  A function to unregister the mutation
+    // observer is passed in.
+    oldNavigateOptions = [];
 
-      const observer = new MutationObserver(() => {
-        setupNavigate(sidebar);
-      });
-      observer.observe(document, {
-        childList: true,
-        subtree: true,
-      });
+    finishNavigate = () => {
+      finishNavigate = null;
+      closeSidebarIfOpened();
+    };
 
-      finishNavigate = () => {
-        observer.disconnect();
-        finishNavigate = null;
-        closeSidebarIfOpened();
-      };
-
-      setupNavigate(sidebar);
-    });
+    setupNavigate();
   }
 
   // Assigns key bindings to sections like inbox / today / constious projects.
@@ -160,7 +163,8 @@
   // be re-invoked every time the DOM refreshes, in order to ensure they are
   // displayed. It overrides the keyboard handler such that it temporarily
   // expects a key.
-  function setupNavigate(sidebar) {
+  function setupNavigate() {
+    const sidebar = getUniqueClass(document, 'roam-sidebar-container');
     // ensureSidebarOpen();
     document.body.classList.add(NAVIGATE_CLASS);
     debug('Creating navigation shortcut tips');
