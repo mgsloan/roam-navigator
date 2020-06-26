@@ -24,9 +24,6 @@
   // Key sequence for last block.
   const LAST_BLOCK_KEY = 'd';
 
-  // Key sequence to edit main title.
-  const EDIT_TITLE_KEY = '^';
-
   // Key to scroll up a bit.
   const SCROLL_UP_KEY = 'ArrowUp';
 
@@ -214,21 +211,6 @@
         });
       });
 
-      // Add article title editing to navigateItems
-      const article = getUniqueClass(document, 'roam-article');
-      if (article) {
-        withUniqueClass(article, 'rm-title-display', all, (title) => {
-          // Can't edit title on log pages, so don't include it in
-          // that case.
-          if (!title.parentElement.classList.contains('roam-log-page')) {
-            navigateItems.push({
-              element: title,
-              mustBeKeys: EDIT_TITLE_KEY,
-            });
-          }
-        });
-      }
-
       const rightSidebarContent = getById('roam-right-sidebar-content');
       if (rightSidebarContent) {
         withId('right-sidebar', (rightSidebar) => {
@@ -249,6 +231,7 @@
       delete navigateOptions[LAST_BLOCK_KEY];
 
       // Add key sequences for every block in main area.
+      const article = getUniqueClass(document, 'roam-article');
       if (article) {
         const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
         addBlocks(navigateOptions, article, lastBlock, '');
@@ -311,6 +294,7 @@
     const blocks = el.querySelectorAll([
       '.rm-block-text',
       '.rm-ref-page-view-title',
+      '.rm-title-display',
       '.rm-pages-title-text',
       '#block-input-ghost',
     ].join(', '));
@@ -1133,6 +1117,9 @@
     '}',
     '#right-sidebar > .flex-h-box > .' + TIP_CLASS + ' {',
     '  position: initial;',
+    '}',
+    '.rm-title-display .' + TIP_CLASS + ' {',
+    '  margin-top: 14px;',
     '}',
   ].join('\n'));
 
