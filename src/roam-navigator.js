@@ -367,7 +367,7 @@
   }
 
   function closeSidebarIfOpened() {
-    withUniqueClass(document, 'roam-article', all, (main) => {
+    withUniqueClass(document, 'roam-center', all, (main) => {
       mouseOver(main);
     });
   }
