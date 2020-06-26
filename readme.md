@@ -9,6 +9,9 @@ typed to select the corresponding elements:
 
 ![screenshot of Roam with navigation mode activated](etc/screenshot.png)
 
+In order to shift-click links to pages, hold `Shift` while pressing
+the last letter of the visual navigation key.
+
 While navigating, the following shortcuts will also be available:
 
 * `Space` to scroll down half a page

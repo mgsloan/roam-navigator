@@ -674,13 +674,18 @@
           f(textarea);
         }
       });
-    } else if (or(matchingClass('rm-ref-page-view-title'),
+      return;
+    }
+    const clickFunc = ev.shiftKey ? shiftClick : click;
+    if (or(matchingClass('rm-ref-page-view-title'),
         matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span',
-          not(matchingClass(TIP_TYPED_CLASS)), click);
+          not(matchingClass(TIP_TYPED_CLASS)), clickFunc);
     } else {
-      click(el);
-      setTimeout(() => click(el));
+      withUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)), (innerDiv) => {
+        clickFunc(innerDiv);
+        setTimeout(() => clickFunc(innerDiv));
+      });
     }
   }
 
@@ -772,16 +777,17 @@
       which: 1,
       button: 0,
       shiftKey: true,
+      target: el
     };
-    document.body.dispatchEvent(createShiftEvent('keydown'));
-    el.dispatchEvent(new MouseEvent('mousedown', options));
-    el.dispatchEvent(new MouseEvent('mouseup', options));
-    el.dispatchEvent(new MouseEvent('click', options));
-    document.body.dispatchEvent(createShiftEvent('keyup'));
-  }
-
-  function createShiftEvent(type) {
-    return createKeyEvent(type, 'Shift', 92);
+    let ev = new MouseEvent('mousedown', options);
+    ev.preventDefault();
+    el.dispatchEvent(ev);
+    ev = new MouseEvent('mouseup', options);
+    ev.preventDefault();
+    el.dispatchEvent(ev);
+    ev = new MouseEvent('click', options);
+    ev.preventDefault();
+    el.dispatchEvent(ev);
   }
 
   function createKeyEvent(type, key, code) {
