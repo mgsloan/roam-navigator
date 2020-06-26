@@ -140,7 +140,7 @@
       const observer = new MutationObserver(() => {
         setupNavigate(sidebar);
       });
-      observer.observe(sidebar, {
+      observer.observe(document, {
         childList: true,
         subtree: true,
       });
@@ -181,18 +181,21 @@
           navigateItems.push({
             element: logButton,
             mustBeKeys: DAILY_NOTES_KEY,
+            keepGoing: true,
           });
         } else if (text === 'GRAPH OVERVIEW' ||
                    text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
           navigateItems.push({
             element: logButton,
             mustBeKeys: GRAPH_OVERVIEW_KEY,
+            keepGoing: true,
           });
         } else if (text === 'ALL PAGES' ||
                    text === ALL_PAGES_KEY + '\nALL PAGES') {
           navigateItems.push({
             element: logButton,
             mustBeKeys: ALL_PAGES_KEY,
+            keepGoing: true,
           });
         } else {
           error('Unhandled .log-button:', text);
@@ -209,6 +212,7 @@
               mustBeKeys: null,
               text: preprocessItemText(text),
               initials: getItemInitials(text),
+              keepGoing: true,
             });
           });
         });
@@ -221,6 +225,7 @@
             navigateItems.push({
               element: closeButton,
               mustBeKeys: 'sc',
+              keepGoing: true,
             });
           });
         });
@@ -338,6 +343,7 @@
       navigateOptions[key] = {
         element: block,
         mustBeKeys: key,
+        keepGoing: not(matchingClass('rm-block-text'))(block),
       };
     }
   }
@@ -664,6 +670,11 @@
             const el = option.element;
             keepGoing = option.keepGoing;
             navigateToElement(ev, el);
+            // Special case: should not keep going after clicking
+            // title to edit.
+            if (matchingClass('rm-title-display')(el) && !ev.shiftKey) {
+              keepGoing = false;
+            }
             // Scroll the clicked thing into view, if needed.
             el.scrollIntoViewIfNeeded();
             // If we're just changing folding, then the user probably wants to
