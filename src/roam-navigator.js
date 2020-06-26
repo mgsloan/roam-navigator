@@ -27,6 +27,15 @@
   // Key sequence to edit main title.
   const EDIT_TITLE_KEY = '^';
 
+  // Key to scroll up a bit.
+  const SCROLL_UP_KEY = 'ArrowUp';
+
+  // Key to scroll down a bit.
+  const SCROLL_DOWN_KEY = 'ArrowDown';
+
+  // Key to scroll a half page down and half page up with shift.
+  const BIG_SCROLL_KEY = ' ';
+
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
   // sets the limit on key sequence length for things based on
@@ -588,28 +597,26 @@
     let keepGoing = false;
     try {
       // Space to scroll down.  Shift+space to scroll up.
-      if (ev.key === ' ') {
+      if (ev.key === BIG_SCROLL_KEY) {
         keepGoing = true;
-        if (navigateKeysPressed.startsWith(SIDEBAR_BLOCK_PREFIX)) {
-          withId('roam-right-sidebar-content', (rightSidebar) => {
-            scrollUpOrDown(ev, rightSidebar);
-          });
-        } else {
-          withUniqueClass(document, 'roam-center', all, (roamCenter) => {
-            scrollUpOrDown(ev, roamCenter.firstChild);
-          });
-        }
-      } else if (ev.key === 'ArrowUp') {
+        withContainerToScroll((container) => {
+          if (ev.shiftKey) {
+            container.scrollBy(0, container.clientHeight / -2);
+          } else {
+            container.scrollBy(0, container.clientHeight / 2);
+          }
+        });
+      } else if (ev.key === SCROLL_UP_KEY) {
         // Up arrow to scroll up a little bit.
         keepGoing = true;
-        withId('starred-pages', (starredPages) => {
-          starredPages.scrollBy(0, -40);
+        withContainerToScroll((container) => {
+          container.scrollBy(0, -40);
         });
-      } else if (ev.key === 'ArrowDown') {
+      } else if (ev.key === SCROLL_DOWN_KEY) {
         // Down arrow to scroll down a little bit.
         keepGoing = true;
-        withId('starred-pages', (starredPages) => {
-          starredPages.scrollBy(0, 40);
+        withContainerToScroll((container) => {
+          container.scrollBy(0, 40);
         });
       } else if (ev.key === 'Backspace') {
         // Backspace removes keys from list of pressed keys.
@@ -690,11 +697,13 @@
     }
   }
 
-  function scrollUpOrDown(ev, el) {
-    if (ev.shiftKey) {
-      el.scrollBy(0, el.clientHeight / -2);
+  function withContainerToScroll(f) {
+    if (navigateKeysPressed.startsWith(SIDEBAR_BLOCK_PREFIX)) {
+      withId('roam-right-sidebar-content', f);
     } else {
-      el.scrollBy(0, el.clientHeight / 2);
+      withUniqueClass(document, 'roam-center', all, (roamCenter) => {
+        f(roamCenter.firstChild);
+      });
     }
   }
 
