@@ -221,9 +221,9 @@
       const rightSidebarContent = getById('roam-right-sidebar-content');
       if (rightSidebarContent) {
         withId('right-sidebar', (rightSidebar) => {
-          withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (closeButton) => {
+          withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (button) => {
             navigateItems.push({
-              element: closeButton,
+              element: button,
               mustBeKeys: 'sc',
               keepGoing: true,
             });
@@ -232,24 +232,24 @@
       }
 
       withUniqueClass(document, 'roam-topbar', all, (topbar) => {
-        const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open']
-        const sidebarButton = getUniqueClass(topbar, buttonClasses);
-        if (sidebarButton) {
+        const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
+        const button = getUniqueClass(topbar, buttonClasses);
+        if (button) {
           navigateItems.push({
-            element: sidebarButton,
+            element: button,
             mustBeKeys: LEFT_SIDEBAR_KEY,
-            keepGoing: true
+            keepGoing: true,
           });
         }
       });
 
-      withUniqueClass(document, 'roam-sidebar-container', all, leftSidebar => {
-        const sidebarButton = getUniqueClass(leftSidebar, 'bp3-icon-menu-closed');
-        if (sidebarButton) {
+      withUniqueClass(document, 'roam-sidebar-container', all, (sidebar) => {
+        const button = getUniqueClass(sidebar, 'bp3-icon-menu-closed');
+        if (button) {
           navigateItems.push({
-            element: sidebarButton,
+            element: button,
             mustBeKeys: LEFT_SIDEBAR_KEY,
-            keepGoing: true
+            keepGoing: true,
           });
         }
       });
@@ -281,7 +281,7 @@
       // Add key sequences for every page in "All Pages" list.
       const allPagesSearch = getById('all-pages-search');
       if (allPagesSearch) {
-        addBlocks(navigateOptions, allPagesSearch, null, '')
+        addBlocks(navigateOptions, allPagesSearch, null, '');
       }
 
       // Avoid infinite recursion. See comment on oldNavigateOptions.
@@ -370,7 +370,8 @@
               el.id === 'block-input-ghost') {
             findParent(el, matchingClass('flex-h-box')).prepend(tip);
           } else if (matchingClass('bp3-button')(el)) {
-            findParent(el, matchingClass('flex-h-box')).firstElementChild.after(tip);
+            const parent = findParent(el, matchingClass('flex-h-box'));
+            parent.firstElementChild.after(tip);
           } else {
             el.prepend(tip);
           }
@@ -830,7 +831,7 @@
       which: 1,
       button: 0,
       shiftKey: true,
-      target: el
+      target: el,
     };
     let ev = new MouseEvent('mousedown', options);
     ev.preventDefault();
@@ -843,6 +844,7 @@
     el.dispatchEvent(ev);
   }
 
+  // eslint-disable-next-line no-unused-vars
   function createKeyEvent(type, key, code) {
     const keyEvent = new Event(type);
     keyEvent.key = key;
