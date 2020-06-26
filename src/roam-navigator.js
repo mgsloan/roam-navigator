@@ -711,9 +711,14 @@
     if (navigateKeysPressed.startsWith(SIDEBAR_BLOCK_PREFIX)) {
       withId('roam-right-sidebar-content', f);
     } else {
-      withUniqueClass(document, 'roam-center', all, (roamCenter) => {
-        f(roamCenter.firstChild);
-      });
+      const allPages = getById('all-pages-search');
+      if (allPages) {
+        withUniqueClass(allPages, 'table', all, f);
+      } else {
+        withUniqueClass(document, 'roam-center', all, (roamCenter) => {
+          f(roamCenter.firstChild);
+        });
+      }
     }
   }
 
