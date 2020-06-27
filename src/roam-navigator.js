@@ -6,6 +6,9 @@
   // Set to true to activate navigation mode when body is focused.
   const ACTIVATE_ON_NO_FOCUS = false;
 
+  // Set to true to activate navigation mode on startup.
+  const ACTIVATE_ON_STARTUP = false;
+
   // Symbol used to indicate the enter key.
   const ENTER_SYMBOL = '⏎';
 
@@ -111,6 +114,11 @@
         if (document.activeElement === document.body) {
           navigate();
         }
+      });
+    }
+    if (ACTIVATE_ON_STARTUP) {
+      persistentlyFind(() => getUniqueClass(document, 'roam-sidebar-container'), () => {
+        navigate();
       });
     }
   }
@@ -277,7 +285,7 @@
 
       // Add key sequences for every block in main area.
       const article = getUniqueClass(document, 'roam-article');
-      if (article) {
+      if (article && article.firstChild) {
         const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
         addBlocks(navigateOptions, article, lastBlock, '');
       }
@@ -724,7 +732,7 @@
     if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
       click(el);
-      persistentlyFindTextArea(blockParent, 0, (textarea) => {
+      persistentlyFind(() => getUniqueTag(blockParent, 'textarea'), (textarea) => {
         textarea.focus();
         const lastPosition = textarea.value.length;
         textarea.setSelectionRange(lastPosition, lastPosition);
@@ -777,17 +785,6 @@
   }
   */
 
-  function persistentlyFindTextArea(blockParent, n, f) {
-    const textarea = getUniqueTag(blockParent, 'textarea');
-    if (textarea) {
-      f(textarea);
-    } else if (n > 200) {
-      warn('Giving up on finding editor text area after', n, 'retries.');
-    } else {
-      setTimeout(() => persistentlyFindTextArea(blockParent, n + 1, f), 15);
-    }
-  }
-
   // Remove old tips if any still exist.
   function removeOldTips() {
     // FIXME: I can't quite explain this, but for some reason, querying the
@@ -810,6 +807,21 @@
   /*****************************************************************************
    * Utilities
    */
+
+  function persistentlyFind(finder, f) {
+    persistentlyFindImpl(finder, 0, f);
+  }
+
+  function persistentlyFindImpl(finder, n, f) {
+    const el = finder();
+    if (el) {
+      f(el);
+    } else if (n > 200) {
+      warn('Giving up on finding after', n, 'retries.');
+    } else {
+      setTimeout(() => persistentlyFindImpl(finder, n + 1, f), 15);
+    }
+  }
 
   // Simulate a mouse over event.
   function mouseOver(el) {
