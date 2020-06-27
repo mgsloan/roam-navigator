@@ -113,17 +113,6 @@
     }, true);
 
     // Watch for DOM changes, to know when to re-render tips.
-    const observer = new MutationObserver(() => {
-      debug('DOM mutation occurred');
-      if (isNavigating()) {
-        setupNavigate(false);
-        registerScrollHandlers();
-      }
-    });
-    observer.observe(document, {
-      childList: true,
-      subtree: true,
-    });
     if (ACTIVATE_ON_NO_FOCUS) {
       document.addEventListener('focusout', (ev) => {
         if (document.activeElement === document.body) {
@@ -210,6 +199,10 @@
   // Switches to a navigation mode, where navigation targets are annotated
   // with letters to press to click.
   function navigate() {
+    if (finishNavigate) {
+      throw new Error('Invariant violation: navigate called while already navigating');
+    }
+
     // Since the projects list can get reconstructed, watch for changes and
     // reconstruct the shortcut tips.  A function to unregister the mutation
     // observer is passed in.
@@ -217,8 +210,21 @@
     currentNavigateOptions = [];
     navigateKeysPressed = '';
 
+    const observer = new MutationObserver(() => {
+      debug('DOM mutation occurred');
+      if (isNavigating()) {
+        setupNavigate(false);
+        registerScrollHandlers();
+      }
+    });
+    observer.observe(document, {
+      childList: true,
+      subtree: true,
+    });
+
     // TODO: extract this.
     finishNavigate = () => {
+      observer.disconnect();
       finishNavigate = null;
       oldNavigateOptions = [];
       currentNavigateOptions = [];
