@@ -151,7 +151,7 @@
   let finishNavigate = null;
 
   // MUTABLE. Current set of navigate options.
-  let navigateOptions = {};
+  let currentNavigateOptions = {};
 
   // MUTABLE. Used to avoid infinite recursion of 'setupNavigate' due to it
   // being called on mutation of DOM that it mutates.
@@ -182,129 +182,11 @@
   // displayed. It overrides the keyboard handler such that it temporarily
   // expects a key.
   function setupNavigate() {
-    const sidebar = getUniqueClass(document, 'roam-sidebar-container');
     // ensureSidebarOpen();
     document.body.classList.add(NAVIGATE_CLASS);
     debug('Creating navigation shortcut tips');
     try {
-      // Initialize a list of elements to bind to keys for
-      // navigation. Starts out with some reserved keys that will
-      // later be removed.
-      const navigateItems = [{
-        mustBeKeys: SIDEBAR_BLOCK_PREFIX,
-        mustBeKeys: LAST_BLOCK_KEY,
-      }];
-
-      // Add top level navigations to the list of navigateItems
-      withClass(sidebar, 'log-button', (logButton) => {
-        const text = logButton.innerText;
-        if (text === 'DAILY NOTES' ||
-            text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
-          navigateItems.push({
-            element: logButton,
-            mustBeKeys: DAILY_NOTES_KEY,
-            keepGoing: true,
-          });
-        } else if (text === 'GRAPH OVERVIEW' ||
-                   text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
-          navigateItems.push({
-            element: logButton,
-            mustBeKeys: GRAPH_OVERVIEW_KEY,
-            keepGoing: true,
-          });
-        } else if (text === 'ALL PAGES' ||
-                   text === ALL_PAGES_KEY + '\nALL PAGES') {
-          navigateItems.push({
-            element: logButton,
-            mustBeKeys: ALL_PAGES_KEY,
-            keepGoing: true,
-          });
-        } else {
-          error('Unhandled .log-button:', text);
-        }
-      });
-
-      // Add starred shortcuts to the list of navigateItems
-      withUniqueClass(sidebar, 'starred-pages', all, (starredPages) => {
-        withTag(starredPages, 'a', (item) => {
-          withUniqueClass(item, 'page', all, (page) => {
-            const text = page.innerText;
-            navigateItems.push({
-              element: item,
-              mustBeKeys: null,
-              text: preprocessItemText(text),
-              initials: getItemInitials(text),
-              keepGoing: true,
-            });
-          });
-        });
-      });
-
-      const rightSidebarContent = getById('roam-right-sidebar-content');
-      if (rightSidebarContent) {
-        withId('right-sidebar', (rightSidebar) => {
-          withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (button) => {
-            navigateItems.push({
-              element: button,
-              mustBeKeys: 'sc',
-              keepGoing: true,
-            });
-          });
-        });
-      }
-
-      withUniqueClass(document, 'roam-topbar', all, (topbar) => {
-        const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
-        const button = getUniqueClass(topbar, buttonClasses);
-        if (button) {
-          navigateItems.push({
-            element: button,
-            mustBeKeys: LEFT_SIDEBAR_KEY,
-            keepGoing: true,
-          });
-        }
-      });
-
-      withUniqueClass(document, 'roam-sidebar-container', all, (sidebar) => {
-        const button = getUniqueClass(sidebar, 'bp3-icon-menu-closed');
-        if (button) {
-          navigateItems.push({
-            element: button,
-            mustBeKeys: LEFT_SIDEBAR_KEY,
-            keepGoing: true,
-          });
-        }
-      });
-
-      // Assign key sequences to all of the navigateItmes
-      navigateOptions = assignKeysToItems(navigateItems);
-
-      // Remove reserved keys.
-      delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
-      delete navigateOptions[LAST_BLOCK_KEY];
-
-      // Add key sequences for every block in main area.
-      const article = getUniqueClass(document, 'roam-article');
-      if (article && article.firstChild) {
-        const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
-        addBlocks(navigateOptions, article, lastBlock, '');
-      }
-
-      // Add key sequences for every block in sidebar.
-      withId('right-sidebar', (rightSidebar) => {
-        const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
-        addBlocks(
-            navigateOptions,
-            rightSidebar,
-            lastBlock,
-            SIDEBAR_BLOCK_PREFIX);
-      });
-
-      // Add key sequences for every page in "All Pages" list.
-      const allPagesSearch = getById('all-pages-search');
-      if (allPagesSearch) {
-        addBlocks(navigateOptions, allPagesSearch, null, '');
-      }
+      const navigateOptions = collectNavigateOptions();
 
       // Avoid infinite recursion. See comment on oldNavigateOptions.
       let different = false;
@@ -318,6 +200,7 @@
           break;
         }
       }
+      currentNavigateOptions = navigateOptions;
       oldNavigateOptions = navigateOptions;
       if (different) {
         debug('Different set of navigation options, so re-setting them.');
@@ -341,6 +224,130 @@
       document.body.classList.remove(NAVIGATE_CLASS);
       throw ex;
     }
+  }
+
+  function collectNavigateOptions() {
+    const sidebar = getUniqueClass(document, 'roam-sidebar-container');
+    // Initialize a list of elements to bind to keys for
+    // navigation. Starts out with some reserved keys that will
+    // later be removed.
+    const navigateItems = [{
+      mustBeKeys: SIDEBAR_BLOCK_PREFIX,
+      mustBeKeys: LAST_BLOCK_KEY,
+    }];
+
+    // Add top level navigations to the list of navigateItems
+    withClass(sidebar, 'log-button', (logButton) => {
+      const text = logButton.innerText;
+      if (text === 'DAILY NOTES' ||
+          text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
+        navigateItems.push({
+          element: logButton,
+          mustBeKeys: DAILY_NOTES_KEY,
+          keepGoing: true,
+        });
+      } else if (text === 'GRAPH OVERVIEW' ||
+                 text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
+        navigateItems.push({
+          element: logButton,
+          mustBeKeys: GRAPH_OVERVIEW_KEY,
+          keepGoing: true,
+        });
+      } else if (text === 'ALL PAGES' ||
+                 text === ALL_PAGES_KEY + '\nALL PAGES') {
+        navigateItems.push({
+          element: logButton,
+          mustBeKeys: ALL_PAGES_KEY,
+          keepGoing: true,
+        });
+      } else {
+        error('Unhandled .log-button:', text);
+      }
+    });
+
+    // Add starred shortcuts to the list of navigateItems
+    withUniqueClass(sidebar, 'starred-pages', all, (starredPages) => {
+      withTag(starredPages, 'a', (item) => {
+        withUniqueClass(item, 'page', all, (page) => {
+          const text = page.innerText;
+          navigateItems.push({
+            element: item,
+            mustBeKeys: null,
+            text: preprocessItemText(text),
+            initials: getItemInitials(text),
+            keepGoing: true,
+          });
+        });
+      });
+    });
+
+    const rightSidebarContent = getById('roam-right-sidebar-content');
+    if (rightSidebarContent) {
+      withId('right-sidebar', (rightSidebar) => {
+        withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (button) => {
+          navigateItems.push({
+            element: button,
+            mustBeKeys: 'sc',
+            keepGoing: true,
+          });
+        });
+      });
+    }
+
+    withUniqueClass(document, 'roam-topbar', all, (topbar) => {
+      const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
+      const button = getUniqueClass(topbar, buttonClasses);
+      if (button) {
+        navigateItems.push({
+          element: button,
+          mustBeKeys: LEFT_SIDEBAR_KEY,
+          keepGoing: true,
+        });
+      }
+    });
+
+    withUniqueClass(document, 'roam-sidebar-container', all, (sidebar) => {
+      const button = getUniqueClass(sidebar, 'bp3-icon-menu-closed');
+      if (button) {
+        navigateItems.push({
+          element: button,
+          mustBeKeys: LEFT_SIDEBAR_KEY,
+          keepGoing: true,
+        });
+      }
+    });
+
+    // Assign key sequences to all of the navigateItmes
+    const navigateOptions = assignKeysToItems(navigateItems);
+
+    // Remove reserved keys.
+    delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
+    delete navigateOptions[LAST_BLOCK_KEY];
+
+    // Add key sequences for every block in main area.
+    const article = getUniqueClass(document, 'roam-article');
+    if (article && article.firstChild) {
+      const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
+      addBlocks(navigateOptions, article, lastBlock, '');
+    }
+
+    // Add key sequences for every block in sidebar.
+    withId('right-sidebar', (rightSidebar) => {
+      const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
+      addBlocks(
+          navigateOptions,
+          rightSidebar,
+          lastBlock,
+          SIDEBAR_BLOCK_PREFIX);
+    });
+
+    // Add key sequences for every page in "All Pages" list.
+    const allPagesSearch = getById('all-pages-search');
+    if (allPagesSearch) {
+      addBlocks(navigateOptions, allPagesSearch, null, '');
+    }
+
+    return navigateOptions;
   }
 
   function addBlocks(navigateOptions, el, lastBlock, prefix) {
@@ -377,11 +384,11 @@
     // ensureSidebarOpen();
     removeOldTips();
     let renderedAny = false;
-    for (const key of Object.keys(navigateOptions)) {
+    for (const key of Object.keys(currentNavigateOptions)) {
       const prefix = key.slice(0, navigateKeysPressed.length);
       const rest = key.slice(navigateKeysPressed.length);
       if (prefix === navigateKeysPressed) {
-        const option = navigateOptions[key];
+        const option = currentNavigateOptions[key];
         const el = option.element;
         if (!el) {
           error('Missing element for tip', key);
@@ -690,7 +697,7 @@
         }
         if (char.length === 1) {
           navigateKeysPressed += char;
-          const option = navigateOptions[navigateKeysPressed];
+          const option = currentNavigateOptions[navigateKeysPressed];
           if (option) {
             const el = option.element;
             keepGoing = option.keepGoing;
