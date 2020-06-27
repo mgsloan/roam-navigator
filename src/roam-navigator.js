@@ -380,10 +380,7 @@
     // Add key sequences for every block in article.
     const article = getUniqueClass(document, 'roam-article');
     if (article && article.firstChild) {
-      const firstLogPage = getFirstClass(article, 'roam-log-page');
-      const container = firstLogPage ? getFirstClass(firstLogPage, 'flex-v-box') : article.firstChild;
-      const lastBlock = container ? getLastClass(container, 'rm-block-text') : null;
-      addBlocks(navigateOptions, article, lastBlock, '');
+      addBlocks(navigateOptions, article, findLastBlock(article.firstChild), '');
     }
 
     // Add key sequences for every block in sidebar.
@@ -394,7 +391,7 @@
         addBlocks(
             navigateOptions,
             rightSidebar,
-            lastBlock,
+            findLastBlock(rightSidebar),
             SIDEBAR_BLOCK_PREFIX);
         withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (button) => {
           navigateOptions['sc'] = {
@@ -412,6 +409,15 @@
     }
 
     return navigateOptions;
+  }
+
+  function findLastBlock(el) {
+    const firstLogPage = getFirstClass(el, 'roam-log-page');
+    const container = firstLogPage ? getFirstClass(firstLogPage, 'flex-v-box') : el;
+    if (container) {
+      return findLast(all, selectAll(container, '.rm-block-text, #block-input-ghost'));
+    }
+    return null;
   }
 
   function addBlocks(navigateOptions, el, lastBlock, prefix) {
@@ -1291,6 +1297,44 @@
   // Alias for document.getElementById
   function getById(id) {
     return document.getElementById(id);
+  }
+
+
+  // Alias for querySelectorAll.
+  function selectAll(parent, query) {
+    if (!query) {
+      // eslint-disable-next-line no-param-reassign
+      query = parent;
+      // eslint-disable-next-line no-param-reassign
+      parent = document;
+    }
+    return parent.querySelectorAll(query);
+  }
+
+  // Uses querySelectorAll, but requires a unique result.
+  function selectUnique(parent, query) {
+    return findUnique(all, selectAll(parent, query));
+  }
+
+  // Users querySelectorAll, requires unique result, and applies the
+  // user's function to it.  Logs a warning if there isn't one.
+  function withUnique(parent, query, f) {
+    var result = selectUnique(parent, query);
+    if (result) {
+      return f(result);
+    } else {
+      warn('Couldn\'t find unique descendant matching query', query, ', instead got', result);
+      return null;
+    }
+  }
+
+  // Uses querySelectorAll, and applies the provided function to each result.
+  // eslint-disable-next-line no-unused-vars
+  function withQuery(parent, query, f) {
+    var els = selectAll(parent, query);
+    for (var i = 0; i < els.length; i++) {
+      f(els[i]);
+    }
   }
 
   // Invokes the function for the matching id, or logs a warning.
