@@ -76,8 +76,13 @@
         return;
       }
       if (isNavigating()) {
-        keysToIgnore[ev.key] = true;
-        handleNavigateKey(ev);
+        if (getInputTarget(ev)) {
+          warn('Unexpectedly in navigate mode while typing in input');
+          finishNavigate();
+        } else {
+          keysToIgnore[ev.key] = true;
+          handleNavigateKey(ev);
+        }
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
         if (ev.altKey || !getInputTarget(ev)) {
