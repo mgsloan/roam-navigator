@@ -1,7 +1,10 @@
 'use strict';
 {
-  // Set to true to enable debug logging
+  // Set to true to enable debug logging.
   const DEBUG = false;
+
+  // Set to true to activate navigation mode when body is focused.
+  const ACTIVATE_ON_NO_FOCUS = false;
 
   // Symbol used to indicate the enter key.
   const ENTER_SYMBOL = '⏎';
@@ -103,6 +106,13 @@
       childList: true,
       subtree: true,
     });
+    if (ACTIVATE_ON_NO_FOCUS) {
+      document.addEventListener('focusout', (ev) => {
+        if (document.activeElement === document.body) {
+          navigate();
+        }
+      });
+    }
   }
 
   function keyIsModifier(ev) {
