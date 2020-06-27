@@ -92,7 +92,7 @@
           navigate();
           return;
         }
-      } else if (SCROLL_OUTSIDE_NAVIGATE_MODE && handleScrollKey(ev)) {
+      } else if (SCROLL_OUTSIDE_NAVIGATE_MODE && !getInputTarget(ev) && handleScrollKey(ev)) {
         return;
       }
       delete keysToIgnore[ev.key];
