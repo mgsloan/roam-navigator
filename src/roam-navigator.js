@@ -732,6 +732,7 @@
   }
 
   function navigateToElement(ev, el, f) {
+    var closeSidebar = true;
     const inputTarget = getInputTarget(ev);
     if (inputTarget) {
       inputTarget.blur();
@@ -756,6 +757,7 @@
           not(matchingClass(TIP_TYPED_CLASS)), clickFunc);
     } else if (matchingClass('bp3-icon-menu')(el)) {
       mouseOver(el);
+      closeSidebar = false;
     } else {
       const innerDiv = getUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)));
       if (innerDiv) {
@@ -764,6 +766,9 @@
       } else {
         clickFunc(el);
       }
+    }
+    if (closeSidebar) {
+      closeSidebarIfOpened();
     }
   }
 
