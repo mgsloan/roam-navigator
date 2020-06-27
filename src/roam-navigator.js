@@ -858,13 +858,11 @@
     return result;
   }
 
-
   function assignKeysBasedOnUid(items) {
     const result = {};
     const leftovers = [];
     for (const item of items) {
       const key = uidToPrioritizedKeys(item.uid);
-      debug(item.element.innerText, 'hashed to', key);
       const existing = result[key];
       if (existing) {
         leftovers.push(item);
