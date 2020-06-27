@@ -9,11 +9,23 @@
   // Set to true to activate navigation mode on startup.
   const ACTIVATE_ON_STARTUP = false;
 
+  // Set to true to hide links until prefix is typed.
+  const HIDE_LINKS_UNTIL_PREFIX_TYPED = false;
+
+  // Set to true to respond to scroll keys outside navigate mode.
+  const SCROLL_OUTSIDE_NAVIGATE_MODE = false;
+
   // Symbol used to indicate the enter key.
   const ENTER_SYMBOL = '⏎';
 
   // Key to start navigation.  Alt + this key will also trigger navigation.
   const START_NAVIGATE_KEY = 'g';
+
+  // Key to prefix links.
+  const LINK_PREFIX_KEY = 'g';
+
+  // Keys to prioritize for link sequences.
+  const LINK_KEYS = 'gjdksla;'
 
   // Key sequence to navigate to daily notes.
   const DAILY_NOTES_KEY = 'd';
@@ -75,6 +87,8 @@
           navigate();
           return;
         }
+      } else if (SCROLL_OUTSIDE_NAVIGATE_MODE && handleScrollKey(ev)) {
+        return;
       }
       delete keysToIgnore[ev.key];
     }, true);
@@ -102,7 +116,8 @@
     const observer = new MutationObserver(() => {
       debug('DOM mutation occurred');
       if (isNavigating()) {
-        setupNavigate();
+        setupNavigate(false);
+        registerScrollHandlers();
       }
     });
     observer.observe(document, {
@@ -142,8 +157,37 @@
     }
   }
 
+  function registerScrollHandlers() {
+    const rightScroller = getById('roam-right-sidebar-content');
+    if (rightScroller) {
+      rightScroller.removeEventListener('scroll', handleScroll);
+      rightScroller.addEventListener('scroll', handleScroll);
+    }
+    const mainScroller = getUniqueClass(document, 'roam-center');
+    if (mainScroller && mainScroller.firstChild) {
+      mainScroller.firstChild.removeEventListener('scroll', handleScroll);
+      mainScroller.firstChild.addEventListener('scroll', handleScroll);
+    }
+  }
+
+  // MUTABLE. Records whether a link tip rerender is enqueued.
+  let rerenderEnqueued = false;
+
+  function handleScroll() {
+    if (isNavigating() && !rerenderEnqueued) {
+      rerenderEnqueued = true;
+      window.requestAnimationFrame(() => {
+        if (isNavigating()) {
+          setupNavigate(true);
+        }
+        rerenderEnqueued = false;
+      });
+    }
+  }
+
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
+  const LINK_TIP_CLASS = 'roam_navigator_link_tip';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
 
   // MUTABLE. When set, this function should be called when navigate mode
@@ -157,6 +201,9 @@
   // being called on mutation of DOM that it mutates.
   let oldNavigateOptions = {};
 
+  // MUTABLE. Current set of link options.
+  let currentLinkOptions = {};
+
   // MUTABLE. Keys the user has pressed so far.
   let navigateKeysPressed = '';
 
@@ -167,73 +214,85 @@
     // reconstruct the shortcut tips.  A function to unregister the mutation
     // observer is passed in.
     oldNavigateOptions = [];
+    currentNavigateOptions = [];
+    navigateKeysPressed = '';
 
+    // TODO: extract this.
     finishNavigate = () => {
       finishNavigate = null;
+      oldNavigateOptions = [];
+      currentNavigateOptions = [];
       closeSidebarIfOpened();
     };
 
-    setupNavigate();
+    setupNavigate(false);
   }
 
-  // Assigns key bindings to sections like inbox / today / constious projects.
-  // These keybindings get displayed along the options.  This function should
-  // be re-invoked every time the DOM refreshes, in order to ensure they are
-  // displayed. It overrides the keyboard handler such that it temporarily
-  // expects a key.
-  function setupNavigate() {
+  // Assigns key bindings to various parts of the UI, with visual tips
+  // next to them.  This function should be re-invoked every time the
+  // DOM refreshes, in order to ensure they are displayed. It
+  // overrides the keyboard handler such that it temporarily expects a
+  // key.
+  function setupNavigate(onlyLinks) {
     // ensureSidebarOpen();
     document.body.classList.add(NAVIGATE_CLASS);
     debug('Creating navigation shortcut tips');
     try {
-      const navigateOptions = collectNavigateOptions();
+      if (showLinks()) {
+        currentLinkOptions = collectLinkOptions();
+      } else {
+        currentLinkOptions = {};
+      }
 
-      // Avoid infinite recursion. See comment on oldNavigateOptions.
-      let different = false;
-      for (const key of Object.keys(navigateOptions)) {
-        const oldOption = oldNavigateOptions[key];
-        if (!oldOption) {
-          different = true;
-          break;
-        } else if (oldOption.element !== navigateOptions[key].element) {
-          different = true;
-          break;
+      if (!onlyLinks) {
+        const navigateOptions = collectNavigateOptions();
+        // Avoid infinite recursion. See comment on oldNavigateOptions.
+        let different = false;
+        for (const key of Object.keys(navigateOptions)) {
+          const oldOption = oldNavigateOptions[key];
+          if (!oldOption) {
+            different = true;
+            break;
+          } else if (oldOption.element !== navigateOptions[key].element) {
+            different = true;
+            break;
+          }
+        }
+        currentNavigateOptions = navigateOptions;
+        oldNavigateOptions = navigateOptions;
+        if (different) {
+          debug('Different set of navigation options, so re-setting them.');
+        } else {
+          debug('Same set of navigation options, so not re-rendering.');
+          return;
         }
       }
-      currentNavigateOptions = navigateOptions;
-      oldNavigateOptions = navigateOptions;
-      if (different) {
-        debug('Different set of navigation options, so re-setting them.');
-      } else {
-        debug('Same set of navigation options, so not re-rendering.');
-        return;
-      }
-
-      // Initialize string of pressed keys.
-      navigateKeysPressed = '';
 
       // Finish navigation immediately if no tips to render.
-      if (!rerenderTips() && finishNavigate) {
+      if (!rerenderTips(onlyLinks) && finishNavigate) {
         finishNavigate();
       }
     } catch (ex) {
       if (finishNavigate) {
         finishNavigate();
       }
-      removeOldTips();
+      removeOldTips(false);
       document.body.classList.remove(NAVIGATE_CLASS);
       throw ex;
     }
   }
 
-  function collectNavigateOptions() {
+  function collectNavigateOptions(onlyLinks) {
     const sidebar = getUniqueClass(document, 'roam-sidebar-container');
     // Initialize a list of elements to bind to keys for
     // navigation. Starts out with some reserved keys that will
     // later be removed.
     const navigateItems = [{
       mustBeKeys: SIDEBAR_BLOCK_PREFIX,
+    }, {
       mustBeKeys: LAST_BLOCK_KEY,
+    }, {
+      mustBeKeys: LINK_PREFIX_KEY,
     }];
 
     // Add top level navigations to the list of navigateItems
@@ -281,19 +340,6 @@
       });
     });
 
-    const rightSidebarContent = getById('roam-right-sidebar-content');
-    if (rightSidebarContent) {
-      withId('right-sidebar', (rightSidebar) => {
-        withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (button) => {
-          navigateItems.push({
-            element: button,
-            mustBeKeys: 'sc',
-            keepGoing: true,
-          });
-        });
-      });
-    }
-
     withUniqueClass(document, 'roam-topbar', all, (topbar) => {
       const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
       const button = getUniqueClass(topbar, buttonClasses);
@@ -323,8 +369,9 @@
     // Remove reserved keys.
     delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
     delete navigateOptions[LAST_BLOCK_KEY];
+    delete navigateOptions[LINK_PREFIX_KEY];
 
-    // Add key sequences for every block in main area.
+    // Add key sequences for every block in article.
     const article = getUniqueClass(document, 'roam-article');
     if (article && article.firstChild) {
       const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
@@ -332,14 +379,23 @@
     }
 
     // Add key sequences for every block in sidebar.
-    withId('right-sidebar', (rightSidebar) => {
-      const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
-      addBlocks(
-          navigateOptions,
-          rightSidebar,
-          lastBlock,
-          SIDEBAR_BLOCK_PREFIX);
-    });
+    const rightSidebarContent = getById('roam-right-sidebar-content');
+    if (rightSidebarContent) {
+      withId('right-sidebar', (rightSidebar) => {
+        const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
+        addBlocks(
+            navigateOptions,
+            rightSidebar,
+            lastBlock,
+            SIDEBAR_BLOCK_PREFIX);
+        withUniqueClass(rightSidebar, 'bp3-icon-menu-open', all, (button) => {
+          navigateOptions['sc'] = {
+            element: button,
+            keepGoing: true,
+          };
+        });
+      });
+    }
 
     // Add key sequences for every page in "All Pages" list.
     const allPagesSearch = getById('all-pages-search');
@@ -354,7 +410,6 @@
     var offset = 0;
     const blocks = el.querySelectorAll([
       '.rm-block-text',
-      '.rm-ref-page-view-title',
       '.rm-title-display',
       '.rm-pages-title-text',
       '#block-input-ghost',
@@ -379,38 +434,167 @@
     }
   }
 
-  // Add in tips to tell the user what key to press.
-  function rerenderTips() {
-    // ensureSidebarOpen();
-    removeOldTips();
-    let renderedAny = false;
-    for (const key of Object.keys(currentNavigateOptions)) {
-      const prefix = key.slice(0, navigateKeysPressed.length);
-      const rest = key.slice(navigateKeysPressed.length);
-      if (prefix === navigateKeysPressed) {
-        const option = currentNavigateOptions[key];
-        const el = option.element;
-        if (!el) {
-          error('Missing element for tip', key);
-        } else {
-          const tip = div(TIP_CLASS, text(rest));
-          if (prefix.length > 0) {
-            tip.prepend(span(TIP_TYPED_CLASS, text(prefix)));
-          }
-          if (matchingClass('rm-block-text')(el) ||
-              el.id === 'block-input-ghost') {
-            findParent(el, matchingClass('flex-h-box')).prepend(tip);
-          } else if (matchingClass('bp3-button')(el)) {
-            const parent = findParent(el, matchingClass('flex-h-box'));
-            parent.firstElementChild.after(tip);
+  function collectLinkOptions(el) {
+    const linkOptions = {};
+
+    // Add key sequences for every link in article.
+    const article = getUniqueClass(document, 'roam-article');
+    if (article) {
+      addLinks(linkOptions, article);
+    }
+
+    // Add key sequences for every link in right sidebar.
+    withId('right-sidebar', (rightSidebar) => {
+      addLinks(linkOptions, rightSidebar);
+    });
+
+    return linkOptions;
+  }
+
+
+  function addLinks(navigateOptions, el) {
+    const links = el.querySelectorAll([
+      '.rm-page-ref',
+      'a',
+    ].join(', '));
+    const linksByUid = {};
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i];
+      const boundingRect = link.getBoundingClientRect();
+      if (boundingRect.bottom > 50 && boundingRect.top < window.innerHeight - 10) {
+        const parent = link.parentElement;
+        let el;
+        let uid;
+        let isExternalLink = false;
+        if (link.tagName === 'A') {
+          if (matchingClass('rm-ref-page-view-title')(parent)) {
+            // Link in linked references
+            el = parent;
+            uid = link.innerText;
           } else {
-            el.prepend(tip);
+            const hrefAttr = link.attributes['href'];
+            if (hrefAttr) {
+              // External link
+              el = link;
+              uid = hrefAttr.value;
+              isExternalLink = true;
+            } else {
+              warn('Unexpected anchor element', link);
+              continue;
+            }
           }
-          renderedAny = true;
+        } else if (matchingClass('rm-page-ref')(link)) {
+          let uidAttr = parent.attributes['data-link-uid'];
+          if (uidAttr) {
+            // Internal link
+            el = parent;
+            uid = uidAttr.value
+          } else {
+            let tagAttr = link.attributes['data-tag'];
+            if (tagAttr) {
+              // Internal tag
+              el = link;
+              uid = tagAttr.value;
+            } else {
+              error('Expected data-tag or data-link-uid attribute on', link);
+              continue;
+            }
+          }
+        }
+        const existing = linksByUid[uid];
+        if (existing) {
+          const aliased = existing.aliased;
+          aliased.push(el);
+        } else {
+          const text = link.innerText;
+          linksByUid[uid] = {
+            element: el,
+            mustBeKeys: null,
+            text: preprocessItemText(text),
+            initials: getItemInitials(text),
+            aliased: [],
+            extraClasses: [LINK_TIP_CLASS],
+            uid: uid,
+            keepGoing: !isExternalLink,
+          };
         }
       }
     }
-    return renderedAny;
+    const linkItems = []
+    for (const uid of Object.keys(linksByUid)) {
+      linkItems.push(linksByUid[uid]);
+    }
+    // const linkOptions = assignKeysToItems(linkItems);
+    const linkOptions = assignKeysBasedOnUid(linkItems);
+    for (const key of Object.keys(linkOptions)) {
+      navigateOptions[LINK_PREFIX_KEY + key] = linkOptions[key];
+    }
+  }
+
+  // Add in tips to tell the user what key to press.
+  function rerenderTips(onlyLinks) {
+    // ensureSidebarOpen();
+    removeOldTips(onlyLinks);
+    let renderedAny = false;
+    if (!onlyLinks) {
+      for (const key of Object.keys(currentNavigateOptions)) {
+        renderedAny = renderTip(key, currentNavigateOptions[key]) || renderedAny;
+      }
+    }
+    if (showLinks()) {
+      for (const key of Object.keys(currentLinkOptions)) {
+        renderedAny = renderTip(key, currentLinkOptions[key]) || renderedAny;
+      }
+    }
+    // Boolean result is false if navigation mode should be exited due
+    // to no tips to render.
+    if (onlyLinks) {
+      return true;
+    } else if (renderedAny) {
+      return true;
+    } else {
+      return linkPrefixPressed();
+    }
+  }
+
+  function renderTip(key, option) {
+    const prefix = key.slice(0, navigateKeysPressed.length);
+    const rest = key.slice(navigateKeysPressed.length);
+    if (prefix === navigateKeysPressed) {
+      if (option.element) {
+        renderTipInternal(prefix, rest, option.element, option.extraClasses);
+      } else {
+        error('element not set in', option);
+      }
+      if (option.aliased) {
+        for (const el of option.aliased) {
+          renderTipInternal(prefix, rest, el, option.extraClasses);
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function renderTipInternal(prefix, rest, el, extraClasses) {
+    const tip = div(TIP_CLASS, text(rest));
+    if (extraClasses) {
+      for (const cls of extraClasses) {
+        tip.classList.add(cls);
+      }
+    }
+    if (prefix.length > 0) {
+      tip.prepend(span(TIP_TYPED_CLASS, text(prefix)));
+    }
+    if (matchingClass('rm-block-text')(el) ||
+        el.id === 'block-input-ghost') {
+      findParent(el, matchingClass('flex-h-box')).prepend(tip);
+    } else if (matchingClass('bp3-button')(el)) {
+      const parent = findParent(el, matchingClass('flex-h-box'));
+      parent.firstElementChild.after(tip);
+    } else {
+      el.prepend(tip);
+    }
   }
 
   /* TODO: remove this or add option for enabling popping sidebar
@@ -575,7 +759,7 @@
     // assigning those.
     addViaKeyFunc('no-shortening', (it) => {
       const initials = it.initials;
-      if (initials.length >= MAX_NAVIGATE_PREFIX) {
+      if (initials && initials.length >= MAX_NAVIGATE_PREFIX) {
         return initials.slice(0, MAX_NAVIGATE_PREFIX);
       } else {
         return null;
@@ -583,13 +767,20 @@
     });
     // Attempt to use prefix as the key sequence.
     addViaKeyFunc('try-shortening', (it) => {
-      return it.text.slice(0, MAX_NAVIGATE_PREFIX);
+      if (it.text) {
+        return it.text.slice(0, MAX_NAVIGATE_PREFIX);
+      } else {
+        return null;
+      }
     });
     // For the ones that didn't have unambiguous prefixes, try other character
     // suffixes.
     for (let p = MAX_NAVIGATE_PREFIX - 1; p >= 0; p--) {
       for (let m = 0; m < items.length; m++) {
         item = items[m];
+        if (!item.text) {
+          continue;
+        }
         prefix = item.text.slice(0, MAX_NAVIGATE_PREFIX - 1);
         if (prefixNotAliased(prefix)) {
           for (let n = -1; n < JUMP_KEYS.length; n++) {
@@ -653,35 +844,132 @@
     return result;
   }
 
+
+  function assignKeysBasedOnUid(items) {
+    const result = {};
+    const leftovers = [];
+    for (const item of items) {
+      const key = uidToPrioritizedKeys(item.uid);
+      debug(item.element.innerText, 'hashed to', key);
+      const existing = result[key];
+      if (existing) {
+        leftovers.push(item);
+      } else {
+        result[key] = item;
+      }
+    }
+    let leftoverIndex = 0;
+    // First, try to assign keys involving repeated press of
+    // prioritized key.
+    for (const k of LINK_KEYS) {
+      if (leftoverIndex >= leftovers.length) {
+        return result;
+      }
+      const key = k + k;
+      if (!result[key]) {
+        result[key] = leftovers[leftoverIndex];
+        leftoverIndex++;
+      }
+    }
+    // Then, try to assign any two prioritized keys.  One day might
+    // consider prioritizing finger rolls :)
+    for (const k2 of LINK_KEYS) {
+      for (const k1 of LINK_KEYS) {
+        if (leftoverIndex >= leftovers.length) {
+          return result;
+        }
+        const key = k1 + k2;
+        if (!result[key]) {
+          result[key] = leftovers[leftoverIndex];
+          leftoverIndex++;
+        }
+      }
+    }
+    // Then, try to assign any repeated press of jump key.
+    for (const k of JUMP_KEYS) {
+      if (leftoverIndex >= leftovers.length) {
+        return result;
+      }
+      const key = k + k;
+      if (!result[key]) {
+        result[key] = leftovers[leftoverIndex];
+        leftoverIndex++;
+      }
+    }
+    // Then, try to assign any two jump keys.
+    for (const k2 of JUMP_KEYS) {
+      for (const k1 of JUMP_KEYS) {
+        if (leftoverIndex >= leftovers.length) {
+          return result;
+        }
+        const key = k1 + k2;
+        if (!result[key]) {
+          result[key] = leftovers[leftoverIndex];
+          leftoverIndex++;
+        }
+      }
+    }
+    warn('Did not assign keys to all links, which should be impossible.');
+    return result;
+  }
+
+  const LINK_KEY_COMBOS = Math.pow(LINK_KEYS.length, 2);
+
+  function uidToPrioritizedKeys(uid) {
+    const base = LINK_KEYS.length;
+    const hash = hashUid(uid) % LINK_KEY_COMBOS;
+    const lowDigitIndex = hash % base;
+    const highDigitIndex = Math.floor((hash - lowDigitIndex) / base);
+    return LINK_KEYS[highDigitIndex] + LINK_KEYS[lowDigitIndex];
+  }
+
+  function hashUid(uid) {
+    let hash = 0;
+    for (let i = 0; i < uid.length; i++) {
+      hash = ((hash << 5) - hash) + uid.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function handleScrollKey(ev) {
+    if (ev.key === BIG_SCROLL_KEY) {
+      // Space to scroll down.  Shift+space to scroll up.
+      withContainerToScroll((container) => {
+        if (ev.shiftKey) {
+          container.scrollBy(0, container.clientHeight / -2);
+        } else {
+          container.scrollBy(0, container.clientHeight / 2);
+        }
+      });
+      return true;
+    } else if (ev.key === SCROLL_UP_KEY) {
+      // Up arrow to scroll up a little bit.
+      withContainerToScroll((container) => {
+        container.scrollBy(0, -40);
+      });
+      return true;
+    } else if (ev.key === SCROLL_DOWN_KEY) {
+      // Down arrow to scroll down a little bit.
+      withContainerToScroll((container) => {
+        container.scrollBy(0, 40);
+      });
+      return true;
+    }
+    return false;
+  }
+
   function handleNavigateKey(ev) {
+    debug('handleNavigateKey');
     let keepGoing = false;
     try {
-      // Space to scroll down.  Shift+space to scroll up.
-      if (ev.key === BIG_SCROLL_KEY) {
+      if (handleScrollKey(ev)) {
         keepGoing = true;
-        withContainerToScroll((container) => {
-          if (ev.shiftKey) {
-            container.scrollBy(0, container.clientHeight / -2);
-          } else {
-            container.scrollBy(0, container.clientHeight / 2);
-          }
-        });
-      } else if (ev.key === SCROLL_UP_KEY) {
-        // Up arrow to scroll up a little bit.
-        keepGoing = true;
-        withContainerToScroll((container) => {
-          container.scrollBy(0, -40);
-        });
-      } else if (ev.key === SCROLL_DOWN_KEY) {
-        // Down arrow to scroll down a little bit.
-        keepGoing = true;
-        withContainerToScroll((container) => {
-          container.scrollBy(0, 40);
-        });
       } else if (ev.key === 'Backspace') {
         // Backspace removes keys from list of pressed keys.
         navigateKeysPressed = navigateKeysPressed.slice(0, -1);
-        keepGoing = rerenderTips();
+        debug('navigateKeysPressed after backspace:', navigateKeysPressed);
+        keepGoing = rerenderTips(false);
       /* TODO
       } else if (ev.key === 'x') {
         withUniqueClass(document, 'roam-article', all, roamArticle => {
@@ -690,14 +978,19 @@
       } else if (ev.key === 'X') {
         withId('roam-right-sidebar-content', extendWithNewBlock);
       */
+      } else if (ev.key === 'Escape') {
+        keepGoing = false;
       } else {
-        let char = ev.key.toLowerCase();
-        if (ev.key === 'Enter') {
-          char = ENTER_SYMBOL;
-        }
-        if (char.length === 1) {
+        let char = eventToKey(ev);
+        if (char) {
           navigateKeysPressed += char;
-          const option = currentNavigateOptions[navigateKeysPressed];
+          debug('navigateKeysPressed:', navigateKeysPressed);
+          let option =
+            currentNavigateOptions[navigateKeysPressed] ||
+            currentLinkOptions[navigateKeysPressed];
+          if (HIDE_LINKS_UNTIL_PREFIX_TYPED && navigateKeysPressed === LINK_PREFIX_KEY) {
+            currentLinkOptions = collectLinkOptions();
+          }
           if (option) {
             const el = option.element;
             keepGoing = option.keepGoing;
@@ -713,10 +1006,10 @@
             // stay in navigation mode, so reset and rerender.
             if (keepGoing) {
               navigateKeysPressed = '';
-              keepGoing = rerenderTips();
+              keepGoing = rerenderTips(false);
             }
           } else {
-            keepGoing = rerenderTips();
+            keepGoing = rerenderTips(false);
           }
         }
       }
@@ -725,10 +1018,28 @@
         if (finishNavigate) {
           finishNavigate();
         }
-        removeOldTips();
+        removeOldTips(false);
         document.body.classList.remove(NAVIGATE_CLASS);
       }
     }
+  }
+
+  function eventToKey(ev) {
+    if (ev.key === 'Enter') {
+      return ENTER_SYMBOL;
+    }
+    if (ev.key === ':') {
+      return ';';
+    }
+    const digit = stripPrefix("Digit", ev.code);
+    if (digit) {
+      return digit;
+    }
+    const result = ev.key.toLowerCase();
+    if (result.length === 1) {
+      return result;
+    }
+    warn('Ignoring keypress with length =', result.length, ':', result);
   }
 
   function navigateToElement(ev, el, f) {
@@ -759,12 +1070,17 @@
       mouseOver(el);
       closeSidebar = false;
     } else {
-      const innerDiv = getUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)));
-      if (innerDiv) {
-        clickFunc(innerDiv);
-        setTimeout(() => clickFunc(innerDiv));
+      const pageRef = getUniqueClass(el, 'rm-page-ref');
+      if (pageRef) {
+        clickFunc(pageRef);
       } else {
-        clickFunc(el);
+        const innerDiv = getUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)));
+        if (innerDiv) {
+          clickFunc(innerDiv);
+          setTimeout(() => clickFunc(innerDiv));
+        } else {
+          clickFunc(el);
+        }
       }
     }
     if (closeSidebar) {
@@ -798,7 +1114,7 @@
   */
 
   // Remove old tips if any still exist.
-  function removeOldTips() {
+  function removeOldTips(onlyLinks) {
     // FIXME: I can't quite explain this, but for some reason, querying the
     // list that matches the class name doesn't quite work.  So instead find
     // and remove until they are all gone.
@@ -808,12 +1124,21 @@
         const el = toDelete[i];
         el.parentElement.removeChild(el);
       }
-      toDelete = document.getElementsByClassName(TIP_CLASS);
+      toDelete = document.getElementsByClassName(onlyLinks ? LINK_TIP_CLASS : TIP_CLASS);
     } while (toDelete.length > 0);
   }
 
   function isNavigating() {
     return finishNavigate !== null;
+  }
+
+  function showLinks() {
+    return !HIDE_LINKS_UNTIL_PREFIX_TYPED || linkPrefixPressed();
+  }
+
+  function linkPrefixPressed() {
+    return navigateKeysPressed.length > 0 &&
+      navigateKeysPressed[0] === LINK_PREFIX_KEY;
   }
 
   /*****************************************************************************
@@ -1130,6 +1455,17 @@
     };
   }
 
+  // Returns string with prefix removed.  Returns null if prefix doesn't
+  // match.
+  function stripPrefix(prefix, string) {
+    var found = string.slice(0, prefix.length);
+    if (found === prefix) {
+      return string.slice(prefix.length);
+    } else {
+      return null;
+    }
+  }
+
   /*****************************************************************************
    * Predicates (for use with get / with functions above)
    */
@@ -1179,9 +1515,8 @@
     '  position: absolute;',
     '  left: 4px;',
     '  margin-top: 4px;',
-    '  width: 22px;',
     '  font-family: monospace;',
-    '  font-weight: normal;',
+    '  font-weight: bold;',
     '  font-size: 14px;',
     '  color: #b53728;',
     '  z-index: 2147483647;',
@@ -1192,7 +1527,7 @@
     '.log-button .' + TIP_CLASS + ' {',
     '  margin-top: 0;',
     '}',
-    'a > .' + TIP_CLASS + ' {',
+    '.starred-pages .' + TIP_CLASS + ' {',
     '  margin-top: 8px;',
     '}',
     '#roam-right-sidebar-content {',
@@ -1213,6 +1548,15 @@
     '.rm-pages-title-text .' + TIP_CLASS + ' {',
     '  left: 10px;',
     '  margin-top: 0px;',
+    '}',
+    '.' + LINK_TIP_CLASS + ' {',
+    '  left: unset !important;',
+    '  display: inline;',
+    '  margin-top: -14px;',
+    '}',
+    // Prevents clipping of tips.
+    '.' + NAVIGATE_CLASS + ' .parent-path-wrapper {',
+    '  overflow: visible !important;',
     '}',
   ].join('\n'));
 
