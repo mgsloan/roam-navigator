@@ -16,7 +16,7 @@
   const START_NAVIGATE_KEY = 'g';
 
   // Key sequence to navigate to daily notes.
-  const DAILY_NOTES_KEY = 'g';
+  const DAILY_NOTES_KEY = 'd';
 
   // Key sequence to navigate to graph overview.
   const GRAPH_OVERVIEW_KEY = 'o' + ENTER_SYMBOL;
@@ -28,7 +28,7 @@
   const SIDEBAR_BLOCK_PREFIX = 's';
 
   // Key sequence for last block.
-  const LAST_BLOCK_KEY = 'd';
+  const LAST_BLOCK_KEY = 'f';
 
   // Key to scroll up a bit.
   const SCROLL_UP_KEY = 'ArrowUp';
