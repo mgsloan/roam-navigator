@@ -374,7 +374,9 @@
     // Add key sequences for every block in article.
     const article = getUniqueClass(document, 'roam-article');
     if (article && article.firstChild) {
-      const lastBlock = getLastClass(article.firstChild, 'rm-block-text');
+      const firstLogPage = getFirstClass(article, 'roam-log-page');
+      const container = firstLogPage ? getFirstClass(firstLogPage, 'flex-v-box') : article.firstChild;
+      const lastBlock = container ? getLastClass(container, 'rm-block-text') : null;
       addBlocks(navigateOptions, article, lastBlock, '');
     }
 
@@ -1338,6 +1340,12 @@
     return null;
   }
 
+  // Returns first descendant that matches the specified class and
+  // predicate.
+  function getFirstClass(parent, cls, predicate) {
+    return findFirst(predicate, parent.getElementsByClassName(cls));
+  }
+
   // Returns last descendant that matches the specified class and
   // predicate.
   function getLastClass(parent, cls, predicate) {
@@ -1393,6 +1401,20 @@
           tag, 'and passing predicate');
       return null;
     }
+  }
+
+
+  // Given a predicate, returns the first element that matches. If predicate is
+  // null, then it is treated like 'all'.
+  function findFirst(predicate, array) {
+    var pred = checkedPredicate('findFirst', predicate ? predicate : all);
+    for (var i = 0; i < array.length; i++) {
+      var el = array[i];
+      if (pred(el)) {
+        return el;
+      }
+    }
+    return null;
   }
 
   // Given a predicate, returns the last element that matches. If predicate is
