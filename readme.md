@@ -7,7 +7,7 @@ Navigation mode is initiated by pressing `alt-g`, or just `g` when not
 editing text. Visual navigation keys will then appear, which can be
 typed to select the corresponding elements:
 
-![screenshot of Roam with navigation mode activated](etc/screenshot.png)
+![screenshot of Roam with navigation mode activated](etc/screenshot1280.png)
 
 In order to shift-click links to pages, hold `Shift` while pressing
 the last letter of the visual navigation key.
