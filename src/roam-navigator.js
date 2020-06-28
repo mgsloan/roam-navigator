@@ -233,6 +233,8 @@
     }, 50);
   }
 
+  var IS_CHROME = /Chrom/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
   const LINK_TIP_CLASS = 'roam_navigator_link_tip';
@@ -536,7 +538,7 @@
         const parent = link.parentElement;
         let el;
         let uid;
-        let isExternalLink = false;
+        // let isExternalLink = false;
         if (link.tagName === 'A') {
           if (matchingClass('rm-ref-page-view-title')(parent)) {
             // Link in linked references
@@ -548,7 +550,7 @@
               // External link
               el = link;
               uid = hrefAttr.value;
-              isExternalLink = true;
+              // isExternalLink = true;
             } else {
               warn('Unexpected anchor element', link);
               continue;
@@ -586,7 +588,7 @@
             aliased: [],
             extraClasses: [LINK_TIP_CLASS],
             uid: uid,
-            keepGoing: !isExternalLink,
+            keepGoing: true, // !isExternalLink,
           };
         }
       }
@@ -1134,6 +1136,20 @@
     } else if (matchingClass('bp3-icon-menu')(el)) {
       mouseOver(el);
       closeSidebar = false;
+    /* Aborted attempt at opening links in new tab without switching to it
+    } else if (el.attributes['href']) {
+      if (ev.shiftKey || !IS_CHROME) {
+        // Shift on external links causes a normal click, causing
+        // focus to switch to new tab.
+        click(el);
+      } else {
+        // This appears to only work in chrome - opens link in a new
+        // tab without switching focus.
+        debug('MIDDLE CLICK');
+        var middleClick = new MouseEvent( 'click', { 'button': 1, 'which': 2 });
+        el.dispatchEvent(middleClick);
+      }
+      */
     } else {
       const pageRef = getUniqueClass(el, 'rm-page-ref');
       if (pageRef) {
