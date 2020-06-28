@@ -120,11 +120,27 @@
     // Watch for DOM changes, to know when to re-render tips.
     if (ACTIVATE_ON_NO_FOCUS) {
       document.addEventListener('focusout', (ev) => {
-        if (document.activeElement === document.body) {
-          navigate();
+        if (getInputTarget(ev) && document.activeElement === document.body) {
+          // This delay is for efficiency in the case that a focusout
+          // is rapidly followed by a focusin, such as when pressing
+          // enter to create a new bullet.
+          setTimeout(() => {
+            if (document.activeElement === document.body) {
+              debug('Navigating due to focusout event');
+              navigate();
+            }
+          }, 50);
+        }
+      });
+      document.addEventListener('focusin', (ev) => {
+        if (getInputTarget(ev) && isNavigating()) {
+          debug('Ending navigate due to focusin event');
+          endNavigate();
         }
       });
     }
+
+    // Activate on startup, once the DOM is sufficiently populated.
     if (ACTIVATE_ON_STARTUP) {
       persistentlyFind(() => getUniqueClass(document, 'roam-sidebar-container'), () => {
         navigate();
