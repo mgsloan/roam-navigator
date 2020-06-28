@@ -1,5 +1,10 @@
 # roam-navigator changelog
 
+## Version 3
+
+* Fixes input and block highlight deselection when `Alt+g` is used to
+  trigger navigation mode.
+
 ## Version 2
 
 * Small adjustments. Fixes a layout issue where the right sidebar
