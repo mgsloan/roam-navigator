@@ -721,7 +721,7 @@
     return code > 96 && code < 123; // (a-z)
   }
 
-  const JUMP_KEYS = 'asdfghjklqwertyuiopzxcvbnm1234567890';
+  const JUMP_KEYS = 'asdfghjklqwertyuiopzxcvbnm';
 
   // Assign keys to items based on their text.
   function assignKeysToItems(items) {
