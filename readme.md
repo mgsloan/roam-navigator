@@ -3,9 +3,10 @@
 Wherever you may [Roam](https://roamresearch.com/) :metal:, it is
 essential to have an efficient navigator.
 
-Navigation mode is initiated by pressing `alt-g`, or just `g` when not
-editing text. Visual navigation keys will then appear, which can be
-typed to select the corresponding elements:
+By default, navigation mode will be active when no input is focused.
+It can also be initiated by pressing `alt-g`, or just `g` when not
+editing text. Visual navigation keys will then appear, allowing you to
+select links, starred pages, and select blocks to edit.
 
 ![screenshot of Roam with navigation mode activated](etc/screenshot1280.png)
 
