@@ -20,6 +20,9 @@ following things better for the Roam usecase:
    your page.  Attempts to use stable key assignments for clicking
    links in your page.
 
+   - Stable key sequences for your starred pages mean that you can
+     navigate to them even when the sidebar is not visible!
+
 2. You can open pages in the sidebar, by holding `Shift` while typing
    the last character of the navigation hint.
 

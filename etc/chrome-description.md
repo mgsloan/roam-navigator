@@ -6,6 +6,8 @@ Navigation mode is similar to the generic link clicking feature found in extensi
 
 1. Uses stable key sequences for left sidebar and editing blocks in your page.  Attempts to use stable key assignments for clicking links in your page.
 
+   - Stable key sequences for your starred pages mean that you can navigate to them even when the sidebar is not visible!
+
 2. You can open pages in the sidebar, by holding `Shift` while typing the last character of the navigation hint.
 
 3. It attempts to have more integrated visual layout of the hints, fitting into the margins.
