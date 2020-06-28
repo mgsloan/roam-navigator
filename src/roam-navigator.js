@@ -83,7 +83,7 @@
       }
       if (isNavigating()) {
         if (getInputTarget(ev)) {
-          warn('Unexpectedly in navigate mode while typing in input');
+          warn('Ending navigate mode as keypress target is input');
           endNavigate();
         } else {
           keysToIgnore[ev.key] = true;
@@ -672,8 +672,8 @@
       if (parent) {
         parent.firstElementChild.after(tip);
       } else {
-        // TODO: this case happens - fiddly
-        warn('Couldn\'t find expected parent of left sidebar toggle', el);
+        // TODO: Make this case not happen.
+        debug('Couldn\'t find expected parent of left sidebar toggle', el);
       }
     } else {
       el.prepend(tip);
