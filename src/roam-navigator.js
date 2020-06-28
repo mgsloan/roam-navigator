@@ -68,6 +68,10 @@
   // navigation can get handled elsewhere (especially textareas).
   let keysToIgnore = {};
 
+  // MUTABLE. Stores whether a block was highlighted last time the DOM
+  // was mutated.
+  let blockWasHighlighted = false;
+
   function initialize() {
     document.addEventListener('keydown', (ev) => {
       debug('keydown', ev);
@@ -117,25 +121,42 @@
       }
     }, true);
 
+    const observer = new MutationObserver(() => {
+      const blockHighlighted = document.body.querySelector('.block-highlight-blue') !== null;
+      debug('DOM mutation. blockHighlighted = ', blockHighlighted, 'blockWasHighlighted = ', blockWasHighlighted);
+      if (isNavigating()) {
+        if (ACTIVATE_ON_NO_FOCUS &&
+            blockHighlighted &&
+            document.activeElement === document.body) {
+          handleFocusIn();
+        } else {
+          setupNavigate(false);
+          registerScrollHandlers();
+        }
+      } else if (ACTIVATE_ON_NO_FOCUS &&
+                 !blockHighlighted &&
+                 blockWasHighlighted &&
+                 document.activeElement === document.body) {
+        handleFocusOut();
+      }
+      blockWasHighlighted = blockHighlighted;
+    });
+    observer.observe(document, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+
     // Watch for DOM changes, to know when to re-render tips.
     if (ACTIVATE_ON_NO_FOCUS) {
       document.addEventListener('focusout', (ev) => {
         if (getInputTarget(ev) && document.activeElement === document.body) {
-          // This delay is for efficiency in the case that a focusout
-          // is rapidly followed by a focusin, such as when pressing
-          // enter to create a new bullet.
-          setTimeout(() => {
-            if (document.activeElement === document.body) {
-              debug('Navigating due to focusout event');
-              navigate();
-            }
-          }, 50);
+          handleFocusOut();
         }
       });
       document.addEventListener('focusin', (ev) => {
         if (getInputTarget(ev) && isNavigating()) {
-          debug('Ending navigate due to focusin event');
-          endNavigate();
+          handleFocusIn();
         }
       });
     }
@@ -195,6 +216,23 @@
     }
   }
 
+  function handleFocusIn() {
+    debug('Ending navigate due to focusin event or block selection appearing');
+    endNavigate();
+  }
+
+  function handleFocusOut() {
+    // This delay is for efficiency in the case that a focusout
+    // is rapidly followed by a focusin, such as when pressing
+    // enter to create a new bullet.
+    setTimeout(() => {
+      if (!isNavigating() && document.activeElement === document.body) {
+        debug('Navigating due to focusout or block selection disappearing');
+        navigate();
+      }
+    }, 50);
+  }
+
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
   const LINK_TIP_CLASS = 'roam_navigator_link_tip';
@@ -231,22 +269,10 @@
     currentNavigateOptions = [];
     navigateKeysPressed = '';
 
-    const observer = new MutationObserver(() => {
-      debug('DOM mutation occurred');
-      if (isNavigating()) {
-        setupNavigate(false);
-        registerScrollHandlers();
-      }
-    });
-    observer.observe(document, {
-      childList: true,
-      subtree: true,
-    });
 
-    // TODO: extract this.
+    // TODO: Cleanup: Was a function to disconnect observer, but now
+    // it is always registered.
     finishNavigate = () => {
-      observer.disconnect();
-      finishNavigate = null;
     };
 
     setupNavigate(false);
@@ -262,7 +288,9 @@
     currentNavigateOptions = [];
     closeSidebarIfOpened();
     removeOldTips(false);
-    document.body.classList.remove(NAVIGATE_CLASS);
+    if (matchingClass(NAVIGATE_CLASS)(document.body)) {
+      document.body.classList.remove(NAVIGATE_CLASS);
+    }
   }
 
   // Assigns key bindings to various parts of the UI, with visual tips
@@ -272,7 +300,9 @@
   // key.
   function setupNavigate(onlyLinks) {
     // ensureSidebarOpen();
-    document.body.classList.add(NAVIGATE_CLASS);
+    if (!matchingClass(NAVIGATE_CLASS)(document.body)) {
+      document.body.classList.add(NAVIGATE_CLASS);
+    }
     debug('Creating navigation shortcut tips');
     try {
       if (showLinks()) {
