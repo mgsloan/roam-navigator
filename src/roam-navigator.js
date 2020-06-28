@@ -28,7 +28,7 @@
   const LINK_KEYS = 'gjdkslfha;'
 
   // Key sequence to navigate to daily notes.
-  const DAILY_NOTES_KEY = 'd';
+  const DAILY_NOTES_KEY = 'g';
 
   // Key sequence to navigate to graph overview.
   const GRAPH_OVERVIEW_KEY = 'o' + ENTER_SYMBOL;
@@ -247,6 +247,9 @@
   // MUTABLE. Current set of navigate options.
   let currentNavigateOptions = {};
 
+  // MUTABLE. Prefixes used in last assignment of navigate options to keys.
+  let currentNavigatePrefixesUsed = {};
+
   // MUTABLE. Used to avoid infinite recursion of 'setupNavigate' due to it
   // being called on mutation of DOM that it mutates.
   let oldNavigateOptions = {};
@@ -267,8 +270,9 @@
     // Since the projects list can get reconstructed, watch for changes and
     // reconstruct the shortcut tips.  A function to unregister the mutation
     // observer is passed in.
-    oldNavigateOptions = [];
-    currentNavigateOptions = [];
+    oldNavigateOptions = {};
+    currentNavigateOptions = {};
+    currentNavigatePrefixesUsed = {};
     navigateKeysPressed = '';
 
 
@@ -286,8 +290,8 @@
     }
     finishNavigate();
     finishNavigate = null;
-    oldNavigateOptions = [];
-    currentNavigateOptions = [];
+    oldNavigateOptions = {};
+    currentNavigateOptions = {};
     closeSidebarIfOpened();
     removeOldTips(false);
     if (matchingClass(NAVIGATE_CLASS)(document.body)) {
@@ -307,14 +311,8 @@
     }
     debug('Creating navigation shortcut tips');
     try {
-      if (showLinks()) {
-        currentLinkOptions = collectLinkOptions();
-      } else {
-        currentLinkOptions = {};
-      }
-
       if (!onlyLinks) {
-        const navigateOptions = collectNavigateOptions();
+        const { navigateOptions, navigatePrefixesUsed } = collectNavigateOptions();
         // Avoid infinite recursion. See comment on oldNavigateOptions.
         let different = false;
         for (const key of Object.keys(navigateOptions)) {
@@ -328,6 +326,7 @@
           }
         }
         currentNavigateOptions = navigateOptions;
+        currentNavigatePrefixesUsed = navigatePrefixesUsed;
         oldNavigateOptions = navigateOptions;
         if (different) {
           debug('Different set of navigation options, so re-setting them.');
@@ -335,6 +334,12 @@
           debug('Same set of navigation options, so not re-rendering.');
           return;
         }
+      }
+
+      if (showLinks()) {
+        currentLinkOptions = collectLinkOptions(currentNavigateOptions, currentNavigatePrefixesUsed);
+      } else {
+        currentLinkOptions = {};
       }
 
       // Finish navigation immediately if no tips to render.
@@ -429,7 +434,8 @@
     });
 
     // Assign key sequences to all of the navigateItmes
-    const navigateOptions = assignKeysToItems(navigateItems);
+    const { options: navigateOptions, prefixesUsed: navigatePrefixesUsed } =
+      assignKeysToItems(navigateItems);
 
     // Remove reserved keys.
     delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
@@ -467,7 +473,7 @@
       addBlocks(navigateOptions, allPagesSearch, null, '');
     }
 
-    return navigateOptions;
+    return { navigateOptions, navigatePrefixesUsed };
   }
 
   function findLastBlock(el) {
@@ -507,30 +513,37 @@
     }
   }
 
-  function collectLinkOptions(el) {
-    const linkOptions = {};
+  function collectLinkOptions(navigateOptions, navigatePrefixesUsed) {
+    const linksByUid = {};
 
     // Add key sequences for every link in article.
     const article = getUniqueClass(document, 'roam-article');
     if (article) {
-      addLinks(linkOptions, article);
+      addLinks(linksByUid, navigateOptions, article);
     }
 
     // Add key sequences for every link in right sidebar.
     withId('right-sidebar', (rightSidebar) => {
-      addLinks(linkOptions, rightSidebar);
+      addLinks(linksByUid, navigateOptions, rightSidebar);
     });
 
-    return linkOptions;
+    const linkItems = []
+    for (const uid of Object.keys(linksByUid)) {
+      linkItems.push(linksByUid[uid]);
+    }
+
+    const { options } =
+          assignKeysToItems(linkItems, navigateOptions, navigatePrefixesUsed);
+
+    return options;
   }
 
 
-  function addLinks(navigateOptions, el) {
+  function addLinks(linksByUid, navigateOptions, el) {
     const links = el.querySelectorAll([
       '.rm-page-ref',
       'a',
     ].join(', '));
-    const linksByUid = {};
     for (let i = 0; i < links.length; i++) {
       const link = links[i];
       const boundingRect = link.getBoundingClientRect();
@@ -592,15 +605,6 @@
           };
         }
       }
-    }
-    const linkItems = []
-    for (const uid of Object.keys(linksByUid)) {
-      linkItems.push(linksByUid[uid]);
-    }
-    // const linkOptions = assignKeysToItems(linkItems);
-    const linkOptions = assignKeysBasedOnUid(linkItems);
-    for (const key of Object.keys(linkOptions)) {
-      navigateOptions[LINK_PREFIX_KEY + key] = linkOptions[key];
     }
   }
 
@@ -724,16 +728,19 @@
   const JUMP_KEYS = 'asdfghjklqwertyuiopzxcvbnm';
 
   // Assign keys to items based on their text.
-  function assignKeysToItems(items) {
-    const result = {};
+  function assignKeysToItems(items, otherPrefixesUsed, otherOptions) {
+    const options = {};
     let item;
     let keys;
     let prefix;
     const prefixesUsed = {};
+    otherPrefixesUsed = otherPrefixesUsed || {};
+    otherOptions = otherOptions || {};
     // Ensure none of the results are prefixes or equal to this keysequence.
     const prefixNotAliased = (ks) => {
       for (let i = 1; i <= ks.length; i++) {
-        if (result[ks.slice(0, i)]) {
+        const sliced = ks.slice(0, i);
+        if (options[sliced] || otherOptions[sliced]) {
           return false;
         }
       }
@@ -744,7 +751,7 @@
         return false;
       }
       // Ensure this is keysequence is not a prefix of any other keysequence.
-      if (prefixesUsed[ks]) {
+      if (prefixesUsed[ks] || otherPrefixesUsed[ks]) {
         return false;
       }
       return true;
@@ -752,7 +759,7 @@
     const addResult = (ks, x) => {
       const noAlias = noAliasing(ks);
       if (noAlias) {
-        result[ks] = x;
+        options[ks] = x;
         for (let i = 1; i <= ks.length; i++) {
           prefixesUsed[ks.slice(0, i)] = true;
         }
@@ -914,7 +921,7 @@
     if (items.length !== 0) {
       info('There must be many options, couldn\'t find keys for', items);
     }
-    return result;
+    return { options, prefixesUsed };
   }
 
   function assignKeysBasedOnUid(items) {
