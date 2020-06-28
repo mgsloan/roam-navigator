@@ -9,9 +9,6 @@
   // Set to true to activate navigation mode on startup.
   const ACTIVATE_ON_STARTUP = false;
 
-  // Set to true to hide links until prefix is typed.
-  const HIDE_LINKS_UNTIL_PREFIX_TYPED = false;
-
   // Set to true to respond to scroll keys outside navigate mode.
   const SCROLL_OUTSIDE_NAVIGATE_MODE = false;
 
@@ -20,12 +17,6 @@
 
   // Key to start navigation.  Alt + this key will also trigger navigation.
   const START_NAVIGATE_KEY = 'g';
-
-  // Key to prefix links.
-  const LINK_PREFIX_KEY = 'g';
-
-  // Keys to prioritize for link sequences.
-  const LINK_KEYS = 'gjdkslfha;'
 
   // Key sequence to navigate to daily notes.
   const DAILY_NOTES_KEY = 'g';
@@ -336,11 +327,7 @@
         }
       }
 
-      if (showLinks()) {
-        currentLinkOptions = collectLinkOptions(currentNavigateOptions, currentNavigatePrefixesUsed);
-      } else {
-        currentLinkOptions = {};
-      }
+      currentLinkOptions = collectLinkOptions(currentNavigateOptions, currentNavigatePrefixesUsed);
 
       // Finish navigation immediately if no tips to render.
       if (!rerenderTips(onlyLinks) && finishNavigate) {
@@ -361,8 +348,6 @@
       mustBeKeys: SIDEBAR_BLOCK_PREFIX,
     }, {
       mustBeKeys: LAST_BLOCK_KEY,
-    }, {
-      mustBeKeys: LINK_PREFIX_KEY,
     }];
 
     // Add top level navigations to the list of navigateItems
@@ -440,7 +425,6 @@
     // Remove reserved keys.
     delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
     delete navigateOptions[LAST_BLOCK_KEY];
-    delete navigateOptions[LINK_PREFIX_KEY];
 
     // Add key sequences for every block in article.
     const article = getUniqueClass(document, 'roam-article');
@@ -618,20 +602,12 @@
         renderedAny = renderTip(key, currentNavigateOptions[key]) || renderedAny;
       }
     }
-    if (showLinks()) {
-      for (const key of Object.keys(currentLinkOptions)) {
-        renderedAny = renderTip(key, currentLinkOptions[key]) || renderedAny;
-      }
+    for (const key of Object.keys(currentLinkOptions)) {
+      renderedAny = renderTip(key, currentLinkOptions[key]) || renderedAny;
     }
     // Boolean result is false if navigation mode should be exited due
     // to no tips to render.
-    if (onlyLinks) {
-      return true;
-    } else if (renderedAny) {
-      return true;
-    } else {
-      return linkPrefixPressed();
-    }
+    return onlyLinks || renderedAny;
   }
 
   function renderTip(key, option) {
@@ -854,7 +830,7 @@
       }
     });
     // For the ones that didn't have unambiguous prefixes, try other character
-    // suffixes.
+    // prefixes.
     for (let p = MAX_NAVIGATE_PREFIX - 1; p >= 0; p--) {
       for (let m = 0; m < items.length; m++) {
         item = items[m];
@@ -924,81 +900,14 @@
     return { options, prefixesUsed };
   }
 
-  function assignKeysBasedOnUid(items) {
-    const result = {};
-    const leftovers = [];
-    for (const item of items) {
-      const key = uidToPrioritizedKeys(item.uid);
-      const existing = result[key];
-      if (existing) {
-        leftovers.push(item);
-      } else {
-        result[key] = item;
-      }
-    }
-    let leftoverIndex = 0;
-    // First, try to assign keys involving repeated press of
-    // prioritized key.
-    for (const k of LINK_KEYS) {
-      if (leftoverIndex >= leftovers.length) {
-        return result;
-      }
-      const key = k + k;
-      if (!result[key]) {
-        result[key] = leftovers[leftoverIndex];
-        leftoverIndex++;
-      }
-    }
-    // Then, try to assign any two prioritized keys.  One day might
-    // consider prioritizing finger rolls :)
-    for (const k2 of LINK_KEYS) {
-      for (const k1 of LINK_KEYS) {
-        if (leftoverIndex >= leftovers.length) {
-          return result;
-        }
-        const key = k1 + k2;
-        if (!result[key]) {
-          result[key] = leftovers[leftoverIndex];
-          leftoverIndex++;
-        }
-      }
-    }
-    // Then, try to assign any repeated press of jump key.
-    for (const k of JUMP_KEYS) {
-      if (leftoverIndex >= leftovers.length) {
-        return result;
-      }
-      const key = k + k;
-      if (!result[key]) {
-        result[key] = leftovers[leftoverIndex];
-        leftoverIndex++;
-      }
-    }
-    // Then, try to assign any two jump keys.
-    for (const k2 of JUMP_KEYS) {
-      for (const k1 of JUMP_KEYS) {
-        if (leftoverIndex >= leftovers.length) {
-          return result;
-        }
-        const key = k1 + k2;
-        if (!result[key]) {
-          result[key] = leftovers[leftoverIndex];
-          leftoverIndex++;
-        }
-      }
-    }
-    warn('Did not assign keys to all links, which should be impossible.');
-    return result;
-  }
+  const JUMP_KEY_COMBOS = Math.pow(JUMP_KEYS.length, 2);
 
-  const LINK_KEY_COMBOS = Math.pow(LINK_KEYS.length, 2);
-
-  function uidToPrioritizedKeys(uid) {
-    const base = LINK_KEYS.length;
-    const hash = hashUid(uid) % LINK_KEY_COMBOS;
+  function uidToJumpKeys(uid) {
+    const base = JUMP_KEYS.length;
+    const hash = hashUid(uid) % JUMP_KEY_COMBOS;
     const lowDigitIndex = hash % base;
     const highDigitIndex = Math.floor((hash - lowDigitIndex) / base);
-    return LINK_KEYS[highDigitIndex] + LINK_KEYS[lowDigitIndex];
+    return JUMP_KEYS[highDigitIndex] + JUMP_KEYS[lowDigitIndex];
   }
 
   function hashUid(uid) {
@@ -1069,9 +978,6 @@
             error('Invariant violation: navigate and link options have same key', navigateKeysPressed);
           }
           const option = navigateOption || linkOption;
-          if (HIDE_LINKS_UNTIL_PREFIX_TYPED && navigateKeysPressed === LINK_PREFIX_KEY) {
-            currentLinkOptions = collectLinkOptions();
-          }
           if (option) {
             const el = option.element;
             keepGoing = option.keepGoing;
@@ -1221,15 +1127,6 @@
 
   function isNavigating() {
     return finishNavigate !== null;
-  }
-
-  function showLinks() {
-    return !HIDE_LINKS_UNTIL_PREFIX_TYPED || linkPrefixPressed();
-  }
-
-  function linkPrefixPressed() {
-    return navigateKeysPressed.length > 0 &&
-      navigateKeysPressed[0] === LINK_PREFIX_KEY;
   }
 
   /*****************************************************************************
