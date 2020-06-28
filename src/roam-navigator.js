@@ -22,7 +22,7 @@
   const SIDEBAR_BLOCK_PREFIX = 's';
 
   // Key sequence for last block.
-  const LAST_BLOCK_KEY = 'f';
+  const LAST_BLOCK_KEY = 'd';
 
   // Key to scroll up a bit.
   const SCROLL_UP_KEY = 'ArrowUp';
