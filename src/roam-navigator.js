@@ -6,7 +6,8 @@
   // Symbol used to indicate the enter key.
   const ENTER_SYMBOL = '⏎';
 
-  // Key to start navigation.  Alt + this key will also trigger navigation.
+  // Key to start navigation.  Alt + this key will also trigger
+  // navigation.
   const START_NAVIGATE_KEY = 'g';
 
   // Key sequence to navigate to daily notes.
@@ -95,7 +96,13 @@
           ev.stopImmediatePropagation();
           ev.preventDefault();
           keysToIgnore = {};
-          navigate();
+          // Deselect block highlight before navigating.
+          if (isBlockHighlighted()) {
+            click(document.body);
+            setTimeout(navigate);
+          } else {
+            navigate();
+          }
           return;
         }
       } else if (SCROLL_OUTSIDE_NAVIGATE_MODE &&
@@ -126,8 +133,7 @@
     }, true);
 
     const handleChange = throttle(20, () => {
-      const blockHighlighted =
-            document.body.querySelector('.block-highlight-blue') !== null;
+      const blockHighlighted = isBlockHighlighted();
       debug('DOM mutation. blockHighlighted = ', blockHighlighted,
           'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
@@ -229,6 +235,10 @@
         navigate();
       }
     }, 50);
+  }
+
+  function isBlockHighlighted() {
+    return document.body.querySelector('.block-highlight-blue') !== null;
   }
 
   /*
