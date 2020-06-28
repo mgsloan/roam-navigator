@@ -1,7 +1,7 @@
 {
   "name": "Roam Navigator",
   "author": "Michael Sloan",
-  "description": "Adds keybindings for navigating Roam",
+  "description": "Adds visual keyboard navigation to Roam (https://roamresearch.com/).",
   "version": "1",
   "homepage_url": "https://github.com/mgsloan/roam-navigator",
   "content_scripts": [
