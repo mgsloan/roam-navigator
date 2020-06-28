@@ -21,6 +21,14 @@ function initialize() {
       element('p', {},
               text('The key for toggling the sidebar may be a bit hard to see - it\'s a backtick (`)')));
 
+    document.body.appendChild(
+      element('p', { class: 'attribution' },
+              element('a', { href: 'https://www.flaticon.com/free-icon/sextant_113752' }, text('Roam Navigator\'s icon')),
+              text(' made by '),
+              element('a', { href: 'https://www.flaticon.com/authors/pixel-perfect' }, text('Pixel perfect')),
+              text(' from '),
+              element('a', { href: 'www.flaticon.com' }, text('www.flaticon.com'))));
+
     return initialSettings;
   });
 }
