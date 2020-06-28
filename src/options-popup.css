@@ -6,6 +6,9 @@ html {
   font-size: 12px;
 }
 
+p {
+  font-size: 1rem;
+}
 
 
 /* From https://raw.githubusercontent.com/Dogfalo/materialize/v1-dev/dist/css/materialize.css

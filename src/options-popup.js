@@ -7,8 +7,21 @@ function initialize() {
       'Activate navigation mode when Roam is opened');
     addCheckboxOption(initialSettings, 'scroll-outside-navigate-mode', true,
       'Enable scrolling keys (space / shift+space / up / down) even when not in navigation mode');
-    return initialSettings;
     document.body.appendChild(span(text('Roam tabs must be refreshed for changes to apply.')));
+
+    document.body.appendChild(element('h1', {}, text('Usage')));
+    document.body.appendChild(
+      element('p', {},
+              text('Navigation mode is initiated by pressing '),
+              element('b', {}, text('alt+g')),
+              text(', or just '),
+              element('b', {}, text('g')),
+              text(' when not editing text. Then just type the visual navigation keys!')));
+    document.body.appendChild(
+      element('p', {},
+              text('The key for toggling the sidebar may be a bit hard to see - it\'s a backtick (`)')));
+
+    return initialSettings;
   });
 }
 
