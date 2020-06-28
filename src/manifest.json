@@ -11,8 +11,17 @@
       "all_frames": true
     }
   ],
+  "externally_connectable": {
+    "matches": ["*://roamresearch.com/*"]
+  },
   "web_accessible_resources": [
     "roam-navigator.js"
+  ],
+  "browser_action": {
+    "default_popup": "options-popup.html"
+  },
+  "permissions": [
+    "storage"
   ],
   "manifest_version": 2
 }

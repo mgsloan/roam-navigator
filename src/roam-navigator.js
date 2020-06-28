@@ -3,15 +3,6 @@
   // Set to true to enable debug logging.
   const DEBUG = false;
 
-  // Set to true to activate navigation mode when body is focused.
-  const ACTIVATE_ON_NO_FOCUS = false;
-
-  // Set to true to activate navigation mode on startup.
-  const ACTIVATE_ON_STARTUP = false;
-
-  // Set to true to respond to scroll keys outside navigate mode.
-  const SCROLL_OUTSIDE_NAVIGATE_MODE = false;
-
   // Symbol used to indicate the enter key.
   const ENTER_SYMBOL = '⏎';
 
@@ -44,6 +35,23 @@
 
   // Key to toggle left sidebar visibility.
   const LEFT_SIDEBAR_KEY = '`';
+
+  function readSetting(name, initial) {
+    if (window.roamNavigatorSettings && name in window.roamNavigatorSettings) {
+      return roamNavigatorSettings[name];
+    } else {
+      return initial;
+    }
+  }
+
+  // Set to true to activate navigation mode when body is focused.
+  const ACTIVATE_ON_NO_FOCUS = readSetting('activate-on-no-focus', true);
+
+  // Set to true to activate navigation mode on startup.
+  const ACTIVATE_ON_STARTUP = readSetting('activate-on-startup', true);
+
+  // Set to true to respond to scroll keys outside navigate mode.
+  const SCROLL_OUTSIDE_NAVIGATE_MODE = readSetting('scroll-outside-navigate-mode', true);
 
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
@@ -646,7 +654,12 @@
       findParent(el, matchingClass('flex-h-box')).prepend(tip);
     } else if (matchingClass('bp3-button')(el)) {
       const parent = findParent(el, matchingClass('flex-h-box'));
-      parent.firstElementChild.after(tip);
+      if (parent) {
+        parent.firstElementChild.after(tip);
+      } else {
+        // TODO: this case happens - fiddly
+        warn('Couldn\'t find expected parent of left sidebar toggle', el);
+      }
     } else {
       el.prepend(tip);
     }
