@@ -694,7 +694,18 @@
     return code > 96 && code < 123; // (a-z)
   }
 
-  const JUMP_KEYS = 'asdfghjklqwertyuiopzxcvbnm';
+  function filterJumpKeys(keys) {
+    return keys
+      .replace(DAILY_NOTES_KEY, '')
+      .replace(ALL_PAGES_KEY, '')
+      .replace(SIDEBAR_BLOCK_PREFIX, '')
+      .replace(LAST_BLOCK_KEY, '');
+  }
+
+  const HOME_ROW_KEYS = 'asdfghjkl';
+  const JUMP_KEYS = HOME_ROW_KEYS + 'qwertyuiopzxcvbnm';
+  const FILTERED_HOME_ROW_KEYS = filterJumpKeys(HOME_ROW_KEYS);
+  const FILTERED_JUMP_KEYS = filterJumpKeys(JUMP_KEYS);
 
   // Assign keys to items based on their text.
   function assignKeysToItems(items, otherPrefixesUsed, otherOptions) {
@@ -856,14 +867,14 @@
     for (let q = 0; q < items.length; q++) {
       item = items[q];
       let success = false;
-      // If item has a uid, then use it to probe a few times, to
-      // have more stable options.
+      // If item has a uid, then use it to probe a few times, in the
+      // hope of finding a more stable option.
       if (item.uid &&
-          (addResult(uidToJumpKeys(item.uid), item) ||
-           addResult(uidToJumpKeys(item.uid + ' wherever'), item) ||
-           addResult(uidToJumpKeys(item.uid + ' you'), item) ||
-           addResult(uidToJumpKeys(item.uid + ' may'), item) ||
-           addResult(uidToJumpKeys(item.uid + ' roam'), item))) {
+          (addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, FILTERED_HOME_ROW_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, FILTERED_JUMP_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, FILTERED_HOME_ROW_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, FILTERED_JUMP_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid, FILTERED_JUMP_KEYS, FILTERED_JUMP_KEYS), item))) {
         items.splice(q, 1);
         q--;
         continue;
@@ -905,14 +916,11 @@
     return { options, prefixesUsed };
   }
 
-  const JUMP_KEY_COMBOS = Math.pow(JUMP_KEYS.length, 2);
-
-  function uidToJumpKeys(uid) {
-    const base = JUMP_KEYS.length;
-    const hash = hashUid(uid) % JUMP_KEY_COMBOS;
-    const lowDigitIndex = hash % base;
-    const highDigitIndex = Math.floor((hash - lowDigitIndex) / base);
-    return JUMP_KEYS[highDigitIndex] + JUMP_KEYS[lowDigitIndex];
+  function uidToJumpKeys(uid, keys1, keys2) {
+    const hash = hashUid(uid) % (keys1.length * keys2.length);
+    const ix1 = hash % keys1.length;
+    const ix2 = Math.floor((hash - ix1) / keys2.length);
+    return keys1[ix1] + keys2[ix2];
   }
 
   function hashUid(uid) {
