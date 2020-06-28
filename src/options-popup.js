@@ -19,7 +19,7 @@ function initialize() {
             text(', or just '),
             element('b', {}, text('g')),
             text(' when not editing text. '),
-            text('Then just type the visual navigation keys!')));
+            text('Then just type the visual navigation hints!')));
     document.body.appendChild(
         element('p', {},
             text('The key for toggling the sidebar is a backtick (`).')));

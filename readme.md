@@ -5,13 +5,13 @@ essential to have an efficient navigator.
 
 By default, navigation mode will be active when no input is focused.
 It can also be initiated by pressing `alt-g`, or just `g` when not
-editing text. Visual navigation keys will then appear, allowing you to
-select links, starred pages, and select blocks to edit.
+editing text. Visual navigation hints will then appear, allowing you
+to select links, starred pages, and select blocks to edit.
 
 ![screenshot of Roam with navigation mode activated](etc/screenshot1280.png)
 
 In order to shift-click links to pages, hold `Shift` while pressing
-the last letter of the visual navigation key.
+the last letter of the visual navigation hint.
 
 While navigating, the following shortcuts will also be available:
 
