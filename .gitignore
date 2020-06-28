@@ -3,7 +3,7 @@
 /node_modules
 .dir-locals.el
 .git/
-/todoist-shortcuts.zip
+/roam-navigator.zip
 /etc/secrets.json
 /etc/notes.md
 /etc/screenshot-sizer.sh
