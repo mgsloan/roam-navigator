@@ -1036,7 +1036,7 @@
         }
       }
     } finally {
-      if (!keepGoing) {
+      if (!keepGoing && isNavigating()) {
         endNavigate();
       }
     }
