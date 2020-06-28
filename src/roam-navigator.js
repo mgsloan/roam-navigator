@@ -92,10 +92,15 @@
         }
         return;
       } else if (ev.key === START_NAVIGATE_KEY) {
-        if (ev.altKey || !getInputTarget(ev)) {
+        const inputTarget = getInputTarget(ev);
+        if (ev.altKey || !inputTarget) {
           ev.stopImmediatePropagation();
           ev.preventDefault();
           keysToIgnore = {};
+          // Deslect input before navigating
+          if (inputTarget) {
+            inputTarget.blur();
+          }
           // Deselect block highlight before navigating.
           if (isBlockHighlighted()) {
             click(document.body);
@@ -1090,10 +1095,6 @@
 
   function navigateToElement(ev, el, f) {
     let closeSidebar = true;
-    const inputTarget = getInputTarget(ev);
-    if (inputTarget) {
-      inputTarget.blur();
-    }
     if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
       click(el);
