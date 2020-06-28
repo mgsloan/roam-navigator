@@ -78,7 +78,7 @@
       if (isNavigating()) {
         if (getInputTarget(ev)) {
           warn('Unexpectedly in navigate mode while typing in input');
-          finishNavigate();
+          endNavigate();
         } else {
           keysToIgnore[ev.key] = true;
           handleNavigateKey(ev);
@@ -204,7 +204,7 @@
   // Switches to a navigation mode, where navigation targets are annotated
   // with letters to press to click.
   function navigate() {
-    if (finishNavigate) {
+    if (isNavigating()) {
       throw new Error('Invariant violation: navigate called while already navigating');
     }
 
@@ -231,12 +231,22 @@
     finishNavigate = () => {
       observer.disconnect();
       finishNavigate = null;
-      oldNavigateOptions = [];
-      currentNavigateOptions = [];
-      closeSidebarIfOpened();
     };
 
     setupNavigate(false);
+  }
+
+  function endNavigate() {
+    if (!isNavigating()) {
+      throw new Error('Invariant violation: endNavigate while not navigating.');
+    }
+    finishNavigate();
+    finishNavigate = null;
+    oldNavigateOptions = [];
+    currentNavigateOptions = [];
+    closeSidebarIfOpened();
+    removeOldTips(false);
+    document.body.classList.remove(NAVIGATE_CLASS);
   }
 
   // Assigns key bindings to various parts of the UI, with visual tips
@@ -281,14 +291,10 @@
 
       // Finish navigation immediately if no tips to render.
       if (!rerenderTips(onlyLinks) && finishNavigate) {
-        finishNavigate();
+        endNavigate();
       }
     } catch (ex) {
-      if (finishNavigate) {
-        finishNavigate();
-      }
-      removeOldTips(false);
-      document.body.classList.remove(NAVIGATE_CLASS);
+      endNavigate();
       throw ex;
     }
   }
@@ -1032,11 +1038,7 @@
       }
     } finally {
       if (!keepGoing) {
-        if (finishNavigate) {
-          finishNavigate();
-        }
-        removeOldTips(false);
-        document.body.classList.remove(NAVIGATE_CLASS);
+        endNavigate();
       }
     }
   }
