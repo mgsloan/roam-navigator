@@ -45,13 +45,16 @@
   }
 
   // Set to true to activate navigation mode when body is focused.
-  const ACTIVATE_ON_NO_FOCUS = readSetting('activate-on-no-focus', true);
+  const ACTIVATE_ON_NO_FOCUS =
+        readSetting('activate-on-no-focus', true);
 
   // Set to true to activate navigation mode on startup.
-  const ACTIVATE_ON_STARTUP = readSetting('activate-on-startup', true);
+  const ACTIVATE_ON_STARTUP =
+        readSetting('activate-on-startup', true);
 
   // Set to true to respond to scroll keys outside navigate mode.
-  const SCROLL_OUTSIDE_NAVIGATE_MODE = readSetting('scroll-outside-navigate-mode', true);
+  const SCROLL_OUTSIDE_NAVIGATE_MODE =
+        readSetting('scroll-outside-navigate-mode', true);
 
   // 'navigate' (g) attempts to assign keys to items based on their
   // names. In some case there might not be a concise labeling. This
@@ -95,7 +98,9 @@
           navigate();
           return;
         }
-      } else if (SCROLL_OUTSIDE_NAVIGATE_MODE && !getInputTarget(ev) && handleScrollKey(ev)) {
+      } else if (SCROLL_OUTSIDE_NAVIGATE_MODE &&
+                 !getInputTarget(ev) &&
+                 handleScrollKey(ev)) {
         return;
       }
       delete keysToIgnore[ev.key];
@@ -121,8 +126,10 @@
     }, true);
 
     const handleChange = throttle(20, () => {
-      const blockHighlighted = document.body.querySelector('.block-highlight-blue') !== null;
-      debug('DOM mutation. blockHighlighted = ', blockHighlighted, 'blockWasHighlighted = ', blockWasHighlighted);
+      const blockHighlighted =
+            document.body.querySelector('.block-highlight-blue') !== null;
+      debug('DOM mutation. blockHighlighted = ', blockHighlighted,
+          'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
         if (ACTIVATE_ON_NO_FOCUS &&
             blockHighlighted &&
@@ -164,9 +171,8 @@
 
     // Activate on startup, once the DOM is sufficiently populated.
     if (ACTIVATE_ON_STARTUP) {
-      persistentlyFind(() => getUniqueClass(document, 'roam-sidebar-container'), () => {
-        navigate();
-      });
+      persistentlyFind(() => getUniqueClass(document, 'roam-sidebar-container'),
+          navigate);
     }
   }
 
@@ -225,7 +231,10 @@
     }, 50);
   }
 
-  var IS_CHROME = /Chrom/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+  /*
+  var IS_CHROME = /Chrom/.test(navigator.userAgent) &&
+    /Google Inc/.test(navigator.vendor);
+  */
 
   const TIP_CLASS = 'roam_navigator_shortcuts_tip';
   const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
@@ -256,7 +265,7 @@
   // with letters to press to click.
   function navigate() {
     if (isNavigating()) {
-      throw new Error('Invariant violation: navigate called while already navigating');
+      throw new Error('Invariant violation: navigate while already navigating');
     }
 
     // Since the projects list can get reconstructed, watch for changes and
@@ -304,7 +313,8 @@
     debug('Creating navigation shortcut tips');
     try {
       if (!onlyLinks) {
-        const { navigateOptions, navigatePrefixesUsed } = collectNavigateOptions();
+        const {navigateOptions, navigatePrefixesUsed} =
+              collectNavigateOptions();
         // Avoid infinite recursion. See comment on oldNavigateOptions.
         let different = false;
         for (const key of Object.keys(navigateOptions)) {
@@ -328,7 +338,8 @@
         }
       }
 
-      currentLinkOptions = collectLinkOptions(currentNavigateOptions, currentNavigatePrefixesUsed);
+      currentLinkOptions =
+        collectLinkOptions(currentNavigateOptions, currentNavigatePrefixesUsed);
 
       // Finish navigation immediately if no tips to render.
       if (!rerenderTips(onlyLinks) && finishNavigate) {
@@ -420,7 +431,7 @@
     });
 
     // Assign key sequences to all of the navigateItmes
-    const { options: navigateOptions, prefixesUsed: navigatePrefixesUsed } =
+    const {options: navigateOptions, prefixesUsed: navigatePrefixesUsed} =
       assignKeysToItems(navigateItems);
 
     // Remove reserved keys.
@@ -430,14 +441,14 @@
     // Add key sequences for every block in article.
     const article = getUniqueClass(document, 'roam-article');
     if (article && article.firstChild) {
-      addBlocks(navigateOptions, article, findLastBlock(article.firstChild), '');
+      const lastBlock = findLastBlock(article.firstChild);
+      addBlocks(navigateOptions, article, lastBlock, '');
     }
 
     // Add key sequences for every block in sidebar.
     const rightSidebarContent = getById('roam-right-sidebar-content');
     if (rightSidebarContent) {
       withId('right-sidebar', (rightSidebar) => {
-        const lastBlock = getLastClass(rightSidebar, 'rm-block-text');
         addBlocks(
             navigateOptions,
             rightSidebar,
@@ -458,20 +469,23 @@
       addBlocks(navigateOptions, allPagesSearch, null, '');
     }
 
-    return { navigateOptions, navigatePrefixesUsed };
+    return {navigateOptions, navigatePrefixesUsed};
   }
 
   function findLastBlock(el) {
     const firstLogPage = getFirstClass(el, 'roam-log-page');
-    const container = firstLogPage ? getFirstClass(firstLogPage, 'flex-v-box') : el;
+    const container =
+          firstLogPage ? getFirstClass(firstLogPage, 'flex-v-box') : el;
     if (container) {
-      return findLast(all, selectAll(container, '.rm-block-text, #block-input-ghost'));
+      // TODO: inefficient to query all blocks twice.
+      const query = '.rm-block-text, #block-input-ghost';
+      return findLast(all, selectAll(container, query));
     }
     return null;
   }
 
   function addBlocks(navigateOptions, el, lastBlock, prefix) {
-    var offset = 0;
+    let offset = 0;
     const blocks = el.querySelectorAll([
       '.rm-block-text',
       '.rm-title-display',
@@ -512,12 +526,12 @@
       addLinks(linksByUid, navigateOptions, rightSidebar);
     });
 
-    const linkItems = []
+    const linkItems = [];
     for (const uid of Object.keys(linksByUid)) {
       linkItems.push(linksByUid[uid]);
     }
 
-    const { options } =
+    const {options} =
           assignKeysToItems(linkItems, navigateOptions, navigatePrefixesUsed);
 
     return options;
@@ -532,7 +546,8 @@
     for (let i = 0; i < links.length; i++) {
       const link = links[i];
       const boundingRect = link.getBoundingClientRect();
-      if (boundingRect.bottom > 50 && boundingRect.top < window.innerHeight - 10) {
+      if (boundingRect.bottom > 50 &&
+          boundingRect.top < window.innerHeight - 10) {
         const parent = link.parentElement;
         let el;
         let uid;
@@ -564,13 +579,13 @@
             }
           }
         } else if (matchingClass('rm-page-ref')(link)) {
-          let uidAttr = parent.attributes['data-link-uid'];
+          const uidAttr = parent.attributes['data-link-uid'];
           if (uidAttr) {
             // Internal link
             el = parent;
-            uid = uidAttr.value
+            uid = uidAttr.value;
           } else {
-            let tagAttr = link.attributes['data-tag'];
+            const tagAttr = link.attributes['data-tag'];
             if (tagAttr) {
               // Internal tag
               el = link;
@@ -608,12 +623,12 @@
     removeOldTips(onlyLinks);
     let renderedAny = false;
     if (!onlyLinks) {
-      for (const key of Object.keys(currentNavigateOptions)) {
-        renderedAny = renderTip(key, currentNavigateOptions[key]) || renderedAny;
+      for (const k of Object.keys(currentNavigateOptions)) {
+        renderedAny = renderTip(k, currentNavigateOptions[k]) || renderedAny;
       }
     }
-    for (const key of Object.keys(currentLinkOptions)) {
-      renderedAny = renderTip(key, currentLinkOptions[key]) || renderedAny;
+    for (const k of Object.keys(currentLinkOptions)) {
+      renderedAny = renderTip(k, currentLinkOptions[k]) || renderedAny;
     }
     // Boolean result is false if navigation mode should be exited due
     // to no tips to render.
@@ -718,10 +733,10 @@
 
   function filterJumpKeys(keys) {
     return keys
-      .replace(DAILY_NOTES_KEY, '')
-      .replace(ALL_PAGES_KEY, '')
-      .replace(SIDEBAR_BLOCK_PREFIX, '')
-      .replace(LAST_BLOCK_KEY, '');
+        .replace(DAILY_NOTES_KEY, '')
+        .replace(ALL_PAGES_KEY, '')
+        .replace(SIDEBAR_BLOCK_PREFIX, '')
+        .replace(LAST_BLOCK_KEY, '');
   }
 
   const HOME_ROW_KEYS = 'asdfghjkl';
@@ -891,12 +906,14 @@
       let success = false;
       // If item has a uid, then use it to probe a few times, in the
       // hope of finding a more stable option.
+      /* eslint-disable */
       if (item.uid &&
           (addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, FILTERED_HOME_ROW_KEYS), item) ||
            addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, FILTERED_JUMP_KEYS), item) ||
            addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, FILTERED_HOME_ROW_KEYS), item) ||
            addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, FILTERED_JUMP_KEYS), item) ||
            addResult(uidToJumpKeys(item.uid, FILTERED_JUMP_KEYS, FILTERED_JUMP_KEYS), item))) {
+      /* eslint-enable */
         items.splice(q, 1);
         q--;
         continue;
@@ -935,7 +952,7 @@
     if (items.length !== 0) {
       info('There must be many options, couldn\'t find keys for', items);
     }
-    return { options, prefixesUsed };
+    return {options, prefixesUsed};
   }
 
   function uidToJumpKeys(uid, keys1, keys2) {
@@ -1003,14 +1020,15 @@
       } else if (ev.key === 'Escape') {
         keepGoing = false;
       } else {
-        let char = eventToKey(ev);
-        if (char) {
-          navigateKeysPressed += char;
+        const key = eventToKey(ev);
+        if (key) {
+          navigateKeysPressed += key;
           debug('navigateKeysPressed:', navigateKeysPressed);
-          const navigateOption = currentNavigateOptions[navigateKeysPressed]
+          const navigateOption = currentNavigateOptions[navigateKeysPressed];
           const linkOption = currentLinkOptions[navigateKeysPressed];
           if (navigateOption && linkOption) {
-            error('Invariant violation: navigate and link options have same key', navigateKeysPressed);
+            error('Invariant violation: navigate and link option have same key',
+                navigateKeysPressed);
           }
           const option = navigateOption || linkOption;
           if (option) {
@@ -1049,7 +1067,7 @@
     if (ev.key === ':') {
       return ';';
     }
-    const digit = stripPrefix("Digit", ev.code);
+    const digit = stripPrefix('Digit', ev.code);
     if (digit) {
       return digit;
     }
@@ -1061,7 +1079,7 @@
   }
 
   function navigateToElement(ev, el, f) {
-    var closeSidebar = true;
+    let closeSidebar = true;
     const inputTarget = getInputTarget(ev);
     if (inputTarget) {
       inputTarget.blur();
@@ -1069,14 +1087,15 @@
     if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
       click(el);
-      persistentlyFind(() => getUniqueTag(blockParent, 'textarea'), (textarea) => {
-        textarea.focus();
-        const lastPosition = textarea.value.length;
-        textarea.setSelectionRange(lastPosition, lastPosition);
-        if (f) {
-          f(textarea);
-        }
-      });
+      persistentlyFind(() => getUniqueTag(blockParent, 'textarea'),
+          (textarea) => {
+            textarea.focus();
+            const lastPosition = textarea.value.length;
+            textarea.setSelectionRange(lastPosition, lastPosition);
+            if (f) {
+              f(textarea);
+            }
+          });
       return;
     }
     const clickFunc = ev.shiftKey ? shiftClick : click;
@@ -1156,7 +1175,8 @@
         const el = toDelete[i];
         el.parentElement.removeChild(el);
       }
-      toDelete = document.getElementsByClassName(onlyLinks ? LINK_TIP_CLASS : TIP_CLASS);
+      const cls = onlyLinks ? LINK_TIP_CLASS : TIP_CLASS;
+      toDelete = document.getElementsByClassName(cls);
     } while (toDelete.length > 0);
   }
 
@@ -1186,11 +1206,11 @@
   function throttle(ivl, f) {
     let prev = 0;
     return () => {
-        const now = new Date();
-        if (now - prev >= ivl) {
-            f();
-            prev = now;
-        }
+      const now = new Date();
+      if (now - prev >= ivl) {
+        f();
+        prev = now;
+      }
     };
   }
 
@@ -1338,12 +1358,14 @@
 
   // Users querySelectorAll, requires unique result, and applies the
   // user's function to it.  Logs a warning if there isn't one.
+  // eslint-disable-next-line no-unused-vars
   function withUnique(parent, query, f) {
-    var result = selectUnique(parent, query);
+    const result = selectUnique(parent, query);
     if (result) {
       return f(result);
     } else {
-      warn('Couldn\'t find unique descendant matching query', query, ', instead got', result);
+      warn('Couldn\'t find unique descendant matching query',
+          query, ', instead got', result);
       return null;
     }
   }
@@ -1351,8 +1373,8 @@
   // Uses querySelectorAll, and applies the provided function to each result.
   // eslint-disable-next-line no-unused-vars
   function withQuery(parent, query, f) {
-    var els = selectAll(parent, query);
-    for (var i = 0; i < els.length; i++) {
+    const els = selectAll(parent, query);
+    for (const i = 0; i < els.length; i++) {
       f(els[i]);
     }
   }
@@ -1418,6 +1440,7 @@
 
   // Returns last descendant that matches the specified class and
   // predicate.
+  // eslint-disable-next-line no-unused-vars
   function getLastClass(parent, cls, predicate) {
     return findLast(predicate, parent.getElementsByClassName(cls));
   }
@@ -1477,9 +1500,9 @@
   // Given a predicate, returns the first element that matches. If predicate is
   // null, then it is treated like 'all'.
   function findFirst(predicate, array) {
-    var pred = checkedPredicate('findFirst', predicate ? predicate : all);
-    for (var i = 0; i < array.length; i++) {
-      var el = array[i];
+    const pred = checkedPredicate('findFirst', predicate ? predicate : all);
+    for (const i = 0; i < array.length; i++) {
+      const el = array[i];
       if (pred(el)) {
         return el;
       }
@@ -1550,7 +1573,7 @@
   // Returns string with prefix removed.  Returns null if prefix doesn't
   // match.
   function stripPrefix(prefix, string) {
-    var found = string.slice(0, prefix.length);
+    const found = string.slice(0, prefix.length);
     if (found === prefix) {
       return string.slice(prefix.length);
     } else {
