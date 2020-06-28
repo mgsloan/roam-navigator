@@ -863,6 +863,22 @@
     for (let q = 0; q < items.length; q++) {
       item = items[q];
       let success = false;
+      // If item has a uid, then use it to probe a few times, to
+      // have more stable options.
+      if (item.uid &&
+          (addResult(uidToJumpKeys(item.uid), item) ||
+           addResult(uidToJumpKeys(item.uid + ' wherever'), item) ||
+           addResult(uidToJumpKeys(item.uid + ' you'), item) ||
+           addResult(uidToJumpKeys(item.uid + ' may'), item) ||
+           addResult(uidToJumpKeys(item.uid + ' roam'), item))) {
+        items.splice(q, 1);
+        q--;
+        success = true;
+        break;
+      }
+      if (success) {
+        continue;
+      }
       // TODO: Don't hardcode choosing one or two, instead follow
       // MAX_NAVIGATE_PREFIX
       for (let r = 0; r < JUMP_KEYS.length; r++) {
