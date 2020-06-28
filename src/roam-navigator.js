@@ -112,7 +112,7 @@
       }
     }, true);
 
-    const observer = new MutationObserver(() => {
+    const handleChange = throttle(20, () => {
       const blockHighlighted = document.body.querySelector('.block-highlight-blue') !== null;
       debug('DOM mutation. blockHighlighted = ', blockHighlighted, 'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
@@ -132,6 +132,8 @@
       }
       blockWasHighlighted = blockHighlighted;
     });
+
+    const observer = new MutationObserver(handleChange);
     observer.observe(document, {
       childList: true,
       subtree: true,
@@ -192,20 +194,11 @@
     }
   }
 
-  // MUTABLE. Records whether a link tip rerender is enqueued.
-  let rerenderEnqueued = false;
-
-  function handleScroll() {
-    if (isNavigating() && !rerenderEnqueued) {
-      rerenderEnqueued = true;
-      window.requestAnimationFrame(() => {
-        if (isNavigating()) {
-          setupNavigate(true);
-        }
-        rerenderEnqueued = false;
-      });
+  const handleScroll = throttle(20, () => {
+    if (isNavigating()) {
+      setupNavigate(true);
     }
-  }
+  });
 
   function handleFocusIn() {
     debug('Ending navigate due to focusin event or block selection appearing');
@@ -873,10 +866,6 @@
            addResult(uidToJumpKeys(item.uid + ' roam'), item))) {
         items.splice(q, 1);
         q--;
-        success = true;
-        break;
-      }
-      if (success) {
         continue;
       }
       // TODO: Don't hardcode choosing one or two, instead follow
@@ -1162,6 +1151,17 @@
     } else {
       setTimeout(() => persistentlyFindImpl(finder, n + 1, f), 15);
     }
+  }
+
+  function throttle(ivl, f) {
+    let prev = 0;
+    return () => {
+        const now = new Date();
+        if (now - prev >= ivl) {
+            f();
+            prev = now;
+        }
+    };
   }
 
   // Simulate a mouse over event.
