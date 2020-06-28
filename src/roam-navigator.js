@@ -1594,6 +1594,7 @@
     '}',
     '#roam-right-sidebar-content {',
     '  position: relative;',
+    '  height: 0;',
     '}',
     '#roam-right-sidebar-content .' + TIP_CLASS + ' {',
     '  left: 0;',
