@@ -50,7 +50,6 @@ So, in the meantime, it can only be used as an unpacked extension:
 3. Click on: "**Load Temporary Add-on…**"
 4. Select the **src** folder in this repo (no build step needed!)
 
-[Roam Navigator's
-icon](https://www.flaticon.com/free-icon/sextant_1137526) made by
-[Pixel perfect](https://www.flaticon.com/authors/pixel-perfect) from
-[www.flaticon.com](www.flaticon.com).
+Roam Navigator's icon was made by [Pixel
+perfect](https://www.flaticon.com/authors/pixel-perfect) from
+[www.flaticon.com](https://www.flaticon.com).

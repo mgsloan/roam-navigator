@@ -24,13 +24,11 @@ function initialize() {
         element('p', {},
             text('The key for toggling the sidebar is a backtick (`).')));
 
-    const iconUrl = 'https://www.flaticon.com/free-icon/sextant_113752';
     const authorUrl = 'https://www.flaticon.com/authors/pixel-perfect';
-    const siteUrl = 'www.flaticon.com';
+    const siteUrl = 'https://www.flaticon.com';
     document.body.appendChild(
         element('p', {class: 'attribution'},
-            element('a', {href: iconUrl}, text('Roam Navigator\'s icon')),
-            text(' made by '),
+            text('Roam Navigator\'s icon was made by '),
             element('a', {href: authorUrl}, text('Pixel perfect')),
             text(' from '),
             element('a', {href: siteUrl}, text(siteUrl))));
