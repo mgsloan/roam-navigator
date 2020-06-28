@@ -1056,9 +1056,12 @@
         if (char) {
           navigateKeysPressed += char;
           debug('navigateKeysPressed:', navigateKeysPressed);
-          let option =
-            currentNavigateOptions[navigateKeysPressed] ||
-            currentLinkOptions[navigateKeysPressed];
+          const navigateOption = currentNavigateOptions[navigateKeysPressed]
+          const linkOption = currentLinkOptions[navigateKeysPressed];
+          if (navigateOption && linkOption) {
+            error('Invariant violation: navigate and link options have same key', navigateKeysPressed);
+          }
+          const option = navigateOption || linkOption;
           if (HIDE_LINKS_UNTIL_PREFIX_TYPED && navigateKeysPressed === LINK_PREFIX_KEY) {
             currentLinkOptions = collectLinkOptions();
           }
