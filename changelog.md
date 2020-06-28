@@ -1,5 +1,10 @@
 # roam-navigator changelog
 
+## Version 2
+
+* Small adjustments. Fixes a layout issue where the right sidebar
+  content would slightly shift when navigation mode enabled.
+
 ## Version 1
 
 * Initial release!  I am simultaneously very pleased with this
