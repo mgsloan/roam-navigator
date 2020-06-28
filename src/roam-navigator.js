@@ -542,8 +542,17 @@
               uid = hrefAttr.value;
               // isExternalLink = true;
             } else {
-              warn('Unexpected anchor element', link);
-              continue;
+              if (link.parentElement.tagName === 'H1') {
+                //TODO: omitting because the tip on sidebar title gets clipped.
+                continue;
+                /*
+                el = link.parentElement;
+                uid = link.innerText;
+                */
+              } else {
+                warn('Unexpected <a> element', link);
+                continue;
+              }
             }
           }
         } else if (matchingClass('rm-page-ref')(link)) {
