@@ -25,7 +25,7 @@
   const LINK_PREFIX_KEY = 'g';
 
   // Keys to prioritize for link sequences.
-  const LINK_KEYS = 'gjdksla;'
+  const LINK_KEYS = 'gjdkslfha;'
 
   // Key sequence to navigate to daily notes.
   const DAILY_NOTES_KEY = 'd';
