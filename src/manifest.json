@@ -11,9 +11,6 @@
       "all_frames": true
     }
   ],
-  "externally_connectable": {
-    "matches": ["*://roamresearch.com/*"]
-  },
   "web_accessible_resources": [
     "roam-navigator.js"
   ],
