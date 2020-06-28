@@ -1,5 +1,4 @@
 function initialize() {
-  document.body.appendChild(element('h1', {}, text('Roam Navigator Settings')));
   modifySettings((initialSettings) => {
     addCheckboxOption(initialSettings, 'activate-on-no-focus', true,
         'Activate navigation mode when input deselected');
@@ -10,29 +9,6 @@ function initialize() {
       'even when not in navigation mode');
     document.body.appendChild(
         span(text('Roam tabs must be refreshed for changes to apply.')));
-
-    document.body.appendChild(element('h1', {}, text('Usage')));
-    document.body.appendChild(
-        element('p', {},
-            text('Navigation mode is initiated by pressing '),
-            element('b', {}, text('alt+g')),
-            text(', or just '),
-            element('b', {}, text('g')),
-            text(' when not editing text. '),
-            text('Then just type the visual navigation hints!')));
-    document.body.appendChild(
-        element('p', {},
-            text('The key for toggling the sidebar is a backtick (`).')));
-
-    const authorUrl = 'https://www.flaticon.com/authors/pixel-perfect';
-    const siteUrl = 'https://www.flaticon.com';
-    document.body.appendChild(
-        element('p', {class: 'attribution'},
-            text('Roam Navigator\'s icon was made by '),
-            element('a', {href: authorUrl}, text('Pixel perfect')),
-            text(' from '),
-            element('a', {href: siteUrl}, text(siteUrl))));
-
     return initialSettings;
   });
 }
@@ -49,7 +25,7 @@ function addCheckboxOption(initialSettings, name, initial, txt) {
       console.log('newSettings =', newSettings);
       return newSettings;
     }, settingsUpdated));
-  document.body.appendChild(
+  document.querySelector(".settings").appendChild(
       element('p', {},
           element('label', {},
               checkbox,
