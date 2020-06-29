@@ -1,5 +1,9 @@
 # roam-navigator changelog
 
+## Version 4
+
+* Update to the usage guide in the settings popup.
+
 ## Version 3
 
 * Fixes input and block highlight deselection when `Alt+g` is used to
