@@ -251,9 +251,9 @@
     /Google Inc/.test(navigator.vendor);
   */
 
-  const TIP_CLASS = 'roam_navigator_shortcuts_tip';
-  const TIP_TYPED_CLASS = 'roam_navigator_shortcuts_tip_typed';
-  const LINK_TIP_CLASS = 'roam_navigator_link_tip';
+  const HINT_CLASS = 'roam_navigator_hint';
+  const HINT_TYPED_CLASS = 'roam_navigator_hint_typed';
+  const LINK_HINT_CLASS = 'roam_navigator_link_hint';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
 
   // MUTABLE. When set, this function should be called when navigate mode
@@ -623,7 +623,7 @@
             text: preprocessItemText(text),
             initials: getItemInitials(text),
             aliased: [],
-            extraClasses: [LINK_TIP_CLASS],
+            extraClasses: [LINK_HINT_CLASS],
             uid: uid,
             keepGoing: true, // !isExternalLink,
           };
@@ -670,14 +670,14 @@
   }
 
   function renderTipInternal(prefix, rest, el, extraClasses) {
-    const tip = div(TIP_CLASS, text(rest));
+    const tip = div(HINT_CLASS, text(rest));
     if (extraClasses) {
       for (const cls of extraClasses) {
         tip.classList.add(cls);
       }
     }
     if (prefix.length > 0) {
-      tip.prepend(span(TIP_TYPED_CLASS, text(prefix)));
+      tip.prepend(span(HINT_TYPED_CLASS, text(prefix)));
     }
     if (matchingClass('rm-block-text')(el) ||
         el.id === 'block-input-ghost') {
@@ -1113,7 +1113,7 @@
     if (or(matchingClass('rm-ref-page-view-title'),
         matchingClass('rm-title-display'))(el)) {
       withUniqueTag(el, 'span',
-          not(matchingClass(TIP_TYPED_CLASS)), clickFunc);
+          not(matchingClass(HINT_TYPED_CLASS)), clickFunc);
     } else if (matchingClass('bp3-icon-menu')(el)) {
       mouseOver(el);
       closeSidebar = false;
@@ -1136,7 +1136,7 @@
       if (pageRef) {
         clickFunc(pageRef);
       } else {
-        const innerDiv = getUniqueTag(el, 'div', not(matchingClass(TIP_CLASS)));
+        const innerDiv = getUniqueTag(el, 'div', not(matchingClass(HINT_CLASS)));
         if (innerDiv) {
           clickFunc(innerDiv);
           setTimeout(() => clickFunc(innerDiv));
@@ -1186,7 +1186,7 @@
         const el = toDelete[i];
         el.parentElement.removeChild(el);
       }
-      const cls = onlyLinks ? LINK_TIP_CLASS : TIP_CLASS;
+      const cls = onlyLinks ? LINK_HINT_CLASS : HINT_CLASS;
       toDelete = document.getElementsByClassName(cls);
     } while (toDelete.length > 0);
   }
@@ -1637,7 +1637,7 @@
   }
 
   addCss([
-    '.' + TIP_CLASS + ' {',
+    '.' + HINT_CLASS + ' {',
     '  position: absolute;',
     '  left: 4px;',
     '  margin-top: 4px;',
@@ -1647,36 +1647,36 @@
     '  color: rgb(145, 154, 159);',
     '  z-index: 2147483647;',
     '}',
-    '.' + TIP_TYPED_CLASS + ' {',
+    '.' + HINT_TYPED_CLASS + ' {',
     '  color: rgb(206, 217, 224);',
     '}',
-    '.log-button .' + TIP_CLASS + ' {',
+    '.log-button .' + HINT_CLASS + ' {',
     '  margin-top: 0;',
     '}',
-    '.starred-pages .' + TIP_CLASS + ' {',
+    '.starred-pages .' + HINT_CLASS + ' {',
     '  margin-top: 8px;',
     '}',
     '#roam-right-sidebar-content {',
     '  position: relative;',
     '}',
-    '#roam-right-sidebar-content .' + TIP_CLASS + ' {',
+    '#roam-right-sidebar-content .' + HINT_CLASS + ' {',
     '  left: 0;',
     '}',
-    '#right-sidebar > .flex-h-box > .' + TIP_CLASS + ' {',
+    '#right-sidebar > .flex-h-box > .' + HINT_CLASS + ' {',
     '  position: initial;',
     '  height: 0;',
     '}',
-    '.rm-title-display .' + TIP_CLASS + ' {',
+    '.rm-title-display .' + HINT_CLASS + ' {',
     '  margin-top: 14px;',
     '}',
     '#all-pages-search .table {',
     '  position: relative;',
     '}',
-    '.rm-pages-title-text .' + TIP_CLASS + ' {',
+    '.rm-pages-title-text .' + HINT_CLASS + ' {',
     '  left: 10px;',
     '  margin-top: 0px;',
     '}',
-    '.' + LINK_TIP_CLASS + ' {',
+    '.' + LINK_HINT_CLASS + ' {',
     '  left: unset !important;',
     '  display: inline;',
     '  margin-top: -14px;',
