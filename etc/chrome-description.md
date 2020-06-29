@@ -1,4 +1,4 @@
-Wherever you may Roam, it is essential to have an efficient navigator. This extension adds a navigation mode to Roam (https://roamresearch.com), which presents visual navigation hints, that can be typed in order to select the corresponding link, block, or button.
+Wherever you may Roam, it is essential to have an efficient navigator. This browser extension adds a navigation mode to Roam (https://roamresearch.com), which presents visual navigation hints, that can be typed in order to select the corresponding link, block, or button.
 
 By default, navigation mode will be active when no input is focused. It can also be initiated by pressing `Alt+g`, or just `g` when not editing text. Visual navigation hints will then appear, allowing you to select links, starred pages, and select blocks to edit.
 
@@ -10,7 +10,7 @@ Navigation mode is similar to the generic link clicking feature found in extensi
 
 2. You can open pages in the sidebar, by holding `Shift` while typing the last character of the navigation hint.
 
-3. It attempts to have more integrated visual layout of the hints, fitting into the margins.
+3. It attempts to have more integrated visual layout of the hints, fitting them into the margins.
 
 4. Position of the hints update with scrolling and other page updates. In particular, when in navigation mode you can use the keyboard to scroll the main page with `Space`or `Shift+Space` to scroll half a page, and `Down` / `Up` arrows to scroll a bit.
 

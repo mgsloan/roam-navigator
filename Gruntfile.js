@@ -17,7 +17,7 @@ module.exports = function(grunt) {
       },
       extensions: {
         "roam-navigator": {
-          appID: "TODO",
+          appID: "jdnejinifclpmdnhchmadmjcmcjpcpbj",
           zip: 'roam-navigator.zip'
         }
       }
