@@ -63,15 +63,11 @@ following things better for the Roam usecase:
 [Vimium]: https://vimium.github.io/
 [SurfingKeys]: https://github.com/brookhong/Surfingkeys
 
-# How to install
+# How to use from repo
 
-This extension has not yet been published to Chrome Webstore or
-Firefox Add-ons, since there's a possibility it might get directly
-included in the [Roam Toolkit
-extension](https://github.com/roam-unofficial/roam-toolkit) - see
-[this issue in Roam Toolkit's
-tracker](https://github.com/roam-unofficial/roam-toolkit/issues/91).
-So, in the meantime, it can only be used as an unpacked extension:
+To load this repo as an extension, perhaps to make modifications
+(contributions welcome!), you can load it directly as an unpacked
+extension:
 
 ## Chrome
 
