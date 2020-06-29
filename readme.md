@@ -6,14 +6,20 @@ efficient navigator. This browser extension adds a navigation mode to
 order to select the corresponding link, block, or button.
 
 * [ Extension for Google Chrome
-    ![Chrome Users](https://img.shields.io/chrome-web-store/users/jdnejinifclpmdnhchmadmjcmcjpcpbj.svg)
-    ![Chrome Rating](https://img.shields.io/chrome-web-store/rating/jdnejinifclpmdnhchmadmjcmcjpcpbj.svg)
   ](https://chrome.google.com/webstore/detail/todoist-shortcuts/jdnejinifclpmdnhchmadmjcmcjpcpbj)
 
+<!--
+    ![Chrome Users](https://img.shields.io/chrome-web-store/users/jdnejinifclpmdnhchmadmjcmcjpcpbj.svg)
+    ![Chrome Rating](https://img.shields.io/chrome-web-store/rating/jdnejinifclpmdnhchmadmjcmcjpcpbj.svg)
+-->
+
 * [ Extension for Mozilla Firefox
+  ](https://addons.mozilla.org/en-US/firefox/addon/roam-navigator/)
+
+<!--
     ![Firefox Users](https://img.shields.io/amo/users/roam-navigator.svg)
     ![Firefox Rating](https://img.shields.io/amo/rating/roam-navigator.svg)
-  ](https://addons.mozilla.org/en-US/firefox/addon/roam-navigator/)
+-->
 
 By default, navigation mode will be active when no input is focused.
 It can also be initiated by pressing `Alt+g`, or just `g` when not
