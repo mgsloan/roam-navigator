@@ -1136,7 +1136,8 @@
       if (pageRef) {
         clickFunc(pageRef);
       } else {
-        const innerDiv = getUniqueTag(el, 'div', not(matchingClass(HINT_CLASS)));
+        const innerDiv = getUniqueTag(el, 'div',
+            not(matchingClass(HINT_CLASS)));
         if (innerDiv) {
           clickFunc(innerDiv);
           setTimeout(() => clickFunc(innerDiv));
