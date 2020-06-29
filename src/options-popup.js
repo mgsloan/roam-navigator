@@ -25,7 +25,7 @@ function addCheckboxOption(initialSettings, name, initial, txt) {
       console.log('newSettings =', newSettings);
       return newSettings;
     }, settingsUpdated));
-  document.querySelector(".settings").appendChild(
+  document.querySelector('.settings').appendChild(
       element('p', {},
           element('label', {},
               checkbox,
