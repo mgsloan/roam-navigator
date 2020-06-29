@@ -2,7 +2,7 @@
   "name": "Roam Navigator",
   "author": "Michael Sloan",
   "description": "Adds visual keyboard navigation to Roam (https://roamresearch.com/).",
-  "version": "4",
+  "version": "5",
   "homepage_url": "https://github.com/mgsloan/roam-navigator",
   "content_scripts": [
     {

@@ -1,5 +1,9 @@
 # roam-navigator changelog
 
+## Version 5
+
+* More muted color scheme for the visual hints.
+
 ## Version 4
 
 * Update to the usage guide in the settings popup.
