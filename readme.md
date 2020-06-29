@@ -1,4 +1,4 @@
-# Roam Navigator
+# ![](etc/icon48.png) Roam Navigator
 
 Wherever you may [Roam][] :metal:, it is essential to have an
 efficient navigator. This browser extension adds a navigation mode to
