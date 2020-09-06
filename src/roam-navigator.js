@@ -75,6 +75,11 @@
   // was mutated.
   let blockWasHighlighted = false;
 
+  // MUTABLE. Indicates to the mutation observer that the changes
+  // occurred while executing roam-navigator code that mutates DOM,
+  // and so the changes should be ignored.
+  let domMutationLevel = 0;
+
   function initialize() {
     document.addEventListener('keydown', (ev) => {
       debug('keydown', ev);
@@ -166,7 +171,11 @@
       blockWasHighlighted = blockHighlighted;
     });
 
-    const observer = new MutationObserver(handleChange);
+    const observer = new MutationObserver(() => {
+      if (!domMutationLevel) {
+        handleChange();
+      }
+    });
     observer.observe(document, {
       childList: true,
       subtree: true,
@@ -641,17 +650,19 @@
 
   // Add in tips to tell the user what key to press.
   function rerenderTips(onlyLinks) {
-    // ensureSidebarOpen();
-    removeOldTips(onlyLinks);
     let renderedAny = false;
-    if (!onlyLinks) {
-      for (const k of Object.keys(currentNavigateOptions)) {
-        renderedAny = renderTip(k, currentNavigateOptions[k]) || renderedAny;
+    withDomMutation(() => {
+      // ensureSidebarOpen();
+      removeOldTips(onlyLinks);
+      if (!onlyLinks) {
+        for (const k of Object.keys(currentNavigateOptions)) {
+          renderedAny = renderTip(k, currentNavigateOptions[k]) || renderedAny;
+        }
       }
-    }
-    for (const k of Object.keys(currentLinkOptions)) {
-      renderedAny = renderTip(k, currentLinkOptions[k]) || renderedAny;
-    }
+      for (const k of Object.keys(currentLinkOptions)) {
+        renderedAny = renderTip(k, currentLinkOptions[k]) || renderedAny;
+      }
+    });
     // Boolean result is false if navigation mode should be exited due
     // to no tips to render.
     return onlyLinks || renderedAny;
@@ -1188,19 +1199,31 @@
     // FIXME: I can't quite explain this, but for some reason, querying the
     // list that matches the class name doesn't quite work.  So instead find
     // and remove until they are all gone.
-    let toDelete = [];
-    do {
-      for (let i = 0; i < toDelete.length; i++) {
-        const el = toDelete[i];
-        el.parentElement.removeChild(el);
-      }
-      const cls = onlyLinks ? LINK_HINT_CLASS : HINT_CLASS;
-      toDelete = document.getElementsByClassName(cls);
-    } while (toDelete.length > 0);
+    withDomMutation(() => {
+      let toDelete = [];
+      do {
+        for (let i = 0; i < toDelete.length; i++) {
+          const el = toDelete[i];
+          el.parentElement.removeChild(el);
+        }
+        const cls = onlyLinks ? LINK_HINT_CLASS : HINT_CLASS;
+        toDelete = document.getElementsByClassName(cls);
+      } while (toDelete.length > 0);
+    });
   }
 
   function isNavigating() {
     return finishNavigate !== null;
+  }
+
+
+  function withDomMutation(f) {
+    domMutationLevel += 1;
+    try {
+      f();
+    } finally {
+      domMutationLevel -= 1;
+    }
   }
 
   /*****************************************************************************
