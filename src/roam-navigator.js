@@ -82,6 +82,13 @@
       if (keyIsModifier(ev)) {
         return;
       }
+      // Ignore keystrokes pressed with modifier keys, as they might
+      // be used by other extensions.
+      if (ev.ctrlKey ||
+          (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
+        delete keysToIgnore[ev.key];
+        return;
+      }
       if (isNavigating()) {
         if (getInputTarget(ev)) {
           warn('Ending navigate mode as keypress target is input');

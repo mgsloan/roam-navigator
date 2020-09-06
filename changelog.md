@@ -1,5 +1,10 @@
 # roam-navigator changelog
 
+## Unreleased
+
+* In navigation mode, no longer handles events that use the Control or
+  Alt keys.
+
 ## Version 5
 
 * More muted color scheme for the visual hints.
