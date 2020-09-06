@@ -7,8 +7,6 @@ function initialize() {
     addCheckboxOption(initialSettings, 'scroll-outside-navigate-mode', true,
         'Enable scrolling keys (space / shift+space / up / down) ' +
       'even when not in navigation mode');
-    document.body.appendChild(
-        span(text('Roam tabs must be refreshed for changes to apply.')));
     return initialSettings;
   });
 }
