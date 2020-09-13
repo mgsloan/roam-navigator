@@ -9,6 +9,9 @@
 * In navigation mode, no longer handles events that use the Control or
   Alt keys.
 
+* Fixes link clicking for aliased page references. See [#3][].
+
+[#3]: https://github.com/mgsloan/roam-navigator/issues/3
 [#4]: https://github.com/mgsloan/roam-navigator/issues/4
 
 ## Version 5

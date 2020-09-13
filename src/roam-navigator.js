@@ -612,6 +612,9 @@
             // Link in linked references
             el = parent;
             uid = link.innerText;
+          } else if (matchingClass('rm-alias')(link)) {
+            el = link;
+            uid = link.innerText;
           } else {
             const hrefAttr = link.attributes['href'];
             if (hrefAttr) {
