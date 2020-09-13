@@ -212,7 +212,7 @@
 
     // Activate on startup, once the DOM is sufficiently populated.
     if (ACTIVATE_ON_STARTUP) {
-      persistentlyFind(() => getUniqueClass(document, 'roam-sidebar-container'),
+      persistentlyFind(() => getById('right-sidebar'),
           navigate);
     }
   }

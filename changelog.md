@@ -1,5 +1,9 @@
 # roam-navigator changelog
 
+## Version 7
+
+* Fixes "start with navigation mode enabled".
+
 ## Version 6
 
 * Added breadcrumbs to the topbar, for recent pages.  Can be disabled
