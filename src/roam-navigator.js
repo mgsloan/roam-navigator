@@ -162,24 +162,31 @@
       }
     }, true);
 
+    let isReady = false;
+    let initiatedNavigation = false;
+
     const handleChange = throttle(20, () => {
       const blockHighlighted = isBlockHighlighted();
+      const bodyFocused = document.activeElement === document.body;
       debug('DOM mutation. blockHighlighted = ', blockHighlighted,
           'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
-        if (ACTIVATE_ON_NO_FOCUS &&
-            blockHighlighted &&
-            document.activeElement === document.body) {
+        if (ACTIVATE_ON_NO_FOCUS && blockHighlighted && bodyFocused) {
           handleFocusIn();
         } else {
           setupNavigate(false);
           registerScrollHandlers();
         }
+      } else if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation) {
+        navigate();
       } else if (ACTIVATE_ON_NO_FOCUS &&
                  !blockHighlighted &&
                  blockWasHighlighted &&
-                 document.activeElement === document.body) {
+                 bodyFocused) {
         handleFocusOut();
+      }
+      if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation) {
+        initiatedNavigation = true;
       }
       blockWasHighlighted = blockHighlighted;
       updateBreadcrumbs();
@@ -213,7 +220,10 @@
     // Activate on startup, once the DOM is sufficiently populated.
     if (ACTIVATE_ON_STARTUP) {
       persistentlyFind(() => getById('right-sidebar'),
-          navigate);
+          () => {
+            isReady = true;
+            handleChange();
+          });
     }
   }
 
@@ -1406,7 +1416,7 @@
     const el = finder();
     if (el) {
       f(el);
-    } else if (n > 200) {
+    } else if (n > 1000) {
       warn('Giving up on finding after', n, 'retries.');
     } else {
       setTimeout(() => persistentlyFindImpl(finder, n + 1, f), 15);
