@@ -1372,7 +1372,9 @@
         const breadcrumbSpan = span(breadcrumbAttrs);
         breadcrumbSpan.appendChild(span(LINK_ATTRS, text(breadcrumb.title)));
         breadcrumbSpan.onclick = (event) => {
-          window.location.hash = breadcrumb.hash;
+          setTimeout(() => {
+            window.location.hash = breadcrumb.hash;
+          });
         };
         container.appendChild(breadcrumbSpan);
       }

@@ -4,11 +4,14 @@
 
 * Fixes "start with navigation mode enabled".
 
+* Fixes breadcrumb link clicking via keyboard.
+
 ## Version 6
 
-* Added breadcrumbs to the topbar, for recent pages.  Can be disabled
-  via the extension options.  Unfortunately, these links cannot yet be
-  used to open the sidebar - this issue is tracked by [#4][].
+* Added recent pages to the topbar, for quick navigation.  Can be
+  disabled via the extension options.  Unfortunately, these links
+  cannot yet be used to open the sidebar - this issue is tracked by
+  [#4][].
 
 * In navigation mode, no longer handles events that use the Control or
   Alt keys.
