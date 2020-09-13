@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+* Added breadcrumbs to the topbar, for recent pages.  Can be disabled
+  via the extension options.  Unfortunately, these links cannot yet be
+  used to open the sidebar - this issue is tracked by [#4][].
+
 * In navigation mode, no longer handles events that use the Control or
   Alt keys.
+
+[#4]: https://github.com/mgsloan/roam-navigator/issues/4
 
 ## Version 5
 

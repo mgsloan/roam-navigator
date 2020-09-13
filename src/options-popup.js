@@ -7,6 +7,10 @@ function initialize() {
     addCheckboxOption(initialSettings, 'scroll-outside-navigate-mode', true,
         'Enable scrolling keys (space / shift+space / up / down) ' +
       'even when not in navigation mode');
+    addCheckboxOption(initialSettings, 'breadcrumbs-enabled', true,
+        'Enable display of recent pages on top bar.');
+    addCheckboxOption(initialSettings, 'breadcrumbs-always-visible', false,
+        'Make recent pages list always visible, not just in navigation mode');
     return initialSettings;
   });
 }

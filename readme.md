@@ -83,6 +83,13 @@ extension:
 3. Click on: "**Load Temporary Add-on…**"
 4. Select the **src** folder in this repo (no build step needed!)
 
+# Attributions
+
 Roam Navigator's icon was made by [Pixel
 perfect](https://www.flaticon.com/authors/pixel-perfect) from
 [www.flaticon.com](https://www.flaticon.com).
+
+The top bar breadcrumbs was inspired by
+[shodty](https://github.com/shodty)'s idea and code - see
+[roam_breadcrumbs
+script](https://www.reddit.com/r/RoamResearch/comments/hbxooe/playing_with_the_new_roamjs_made_a_feature_to).
