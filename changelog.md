@@ -1,6 +1,6 @@
 # roam-navigator changelog
 
-## Unreleased
+## Version 6
 
 * Added breadcrumbs to the topbar, for recent pages.  Can be disabled
   via the extension options.  Unfortunately, these links cannot yet be
