@@ -252,10 +252,11 @@
       rightScroller.removeEventListener('scroll', handleScroll);
       rightScroller.addEventListener('scroll', handleScroll);
     }
-    const mainScroller = getUniqueClass(document, 'roam-center');
+    var mainScroller = getUniqueClass(document, 'roam-body-main');
     if (mainScroller && mainScroller.firstChild) {
-      mainScroller.firstChild.removeEventListener('scroll', handleScroll);
-      mainScroller.firstChild.addEventListener('scroll', handleScroll);
+      mainScroller = mainScroller.firstChild
+      mainScroller.removeEventListener('scroll', handleScroll);
+      mainScroller.addEventListener('scroll', handleScroll);
     }
   }
 
@@ -765,9 +766,7 @@
   */
 
   function closeSidebarIfOpened() {
-    withUniqueClass(document, 'roam-center', all, (main) => {
-      mouseOver(main);
-    });
+    withUniqueClass(document, 'roam-body-main', all, mouseOver);
   }
 
   // Lowercase and take only alphanumeric.
@@ -1215,8 +1214,8 @@
       if (allPages) {
         withUniqueClass(allPages, 'table', all, f);
       } else {
-        withUniqueClass(document, 'roam-center', all, (roamCenter) => {
-          f(roamCenter.firstChild);
+        withUniqueClass(document, 'roam-body-main', all, (main) => {
+          f(main.firstChild);
         });
       }
     }
