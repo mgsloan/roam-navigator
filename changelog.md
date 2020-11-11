@@ -1,5 +1,9 @@
 # roam-navigator changelog
 
+## Version 8
+
+* Fixes using spacebar + arrow keys to scroll
+
 ## Version 7
 
 * Fixes "start with navigation mode enabled".
