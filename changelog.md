@@ -1,5 +1,11 @@
 # roam-navigator changelog
 
+## Version 9
+
+* Fixes block navigation tips to work with new Roam DOM. See [#10][].
+
+[#10]: https://github.com/mgsloan/roam-navigator/issues/10
+
 ## Version 8
 
 * Fixes using spacebar + arrow keys to scroll
