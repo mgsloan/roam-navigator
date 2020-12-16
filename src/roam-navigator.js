@@ -738,9 +738,9 @@
     }
     if (matchingClass('rm-block-text')(el) ||
         el.id === 'block-input-ghost') {
-      findParent(el, matchingClass('flex-h-box')).prepend(tip);
+      findParent(el, matchingClass('rm-block-main')).prepend(tip);
     } else if (matchingClass('bp3-button')(el)) {
-      const parent = findParent(el, matchingClass('flex-h-box'));
+      const parent = findParent(el, matchingClass('rm-block-main'));
       if (parent) {
         parent.firstElementChild.after(tip);
       } else {
