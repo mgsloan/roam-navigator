@@ -1270,7 +1270,7 @@
   };
 
   // Regex used to extract id from hash portion of url.
-  const ID_FROM_HASH_REGEX = /#\/app\/[^\/]*\/page\/([a-zA-Z0-9\-]*)$/;
+  const ID_FROM_HASH_REGEX = /#\/app\/[^\/]*\/page\/([a-zA-Z0-9\-_]*)$/;
 
   // Regex used to identify if the hash portion of the url is the daily page.
   const IS_DAILY_NOTES_REGEX = /#\/app\/[^\/]*$/;
