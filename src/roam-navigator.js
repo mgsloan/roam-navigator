@@ -432,6 +432,7 @@
   }
 
   function collectNavigateOptions() {
+    const uidToNavigateOptionsMap = {};
     const sidebar = getUniqueClass(document, 'roam-sidebar-container');
     // Initialize a list of elements to bind to keys for
     // navigation. Starts out with some reserved keys that will
@@ -447,25 +448,34 @@
       const text = logButton.innerText;
       if (text === 'DAILY NOTES' ||
           text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
-        navigateItems.push({
+        const option = {
           element: logButton,
           mustBeKeys: DAILY_NOTES_KEY,
           keepGoing: true,
-        });
+          isNavigateOption: true,
+        };
+        navigateItems.push(option);
+        uidToNavigateOptionsMap[DAILY_NOTES_UID] = option;
       } else if (text === 'GRAPH OVERVIEW' ||
                  text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
-        navigateItems.push({
+        const option = {
           element: logButton,
           mustBeKeys: GRAPH_OVERVIEW_KEY,
           keepGoing: true,
-        });
+          isNavigateOption: true,
+        };
+        navigateItems.push(option);
+        uidToNavigateOptionsMap[GRAPH_OVERVIEW_UID] = option;
       } else if (text === 'ALL PAGES' ||
                  text === ALL_PAGES_KEYS + '\nALL PAGES') {
-        navigateItems.push({
+        const option = {
           element: logButton,
           mustBeKeys: ALL_PAGES_KEYS,
           keepGoing: true,
-        });
+          isNavigateOption: true,
+        };
+        navigateItems.push(option);
+        uidToNavigateOptionsMap[ALL_PAGES_UID] = option;
       } else {
         error('Unhandled .log-button:', text);
       }
@@ -481,7 +491,6 @@
             mustBeKeys: null,
             text: preprocessItemText(text),
             initials: getItemInitials(text),
-            aliased: [],
             isNavigateOption: true,
             keepGoing: true,
           });
@@ -521,7 +530,6 @@
     delete navigateOptions[LAST_BLOCK_KEY];
 
     // For links that have a uid, collect a map from that to the options.
-    const uidToNavigateOptionsMap = {};
     for (let keySequence in navigateOptions) {
       const option = navigateOptions[keySequence];
       if (option.element && option.element.attributes['href']) {
