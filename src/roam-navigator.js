@@ -311,6 +311,9 @@
   // MUTABLE. Prefixes used in last assignment of navigate options to keys.
   let currentNavigatePrefixesUsed = {};
 
+  // MUTABLE. Map from uids to navigate options.
+  let currentUidToNavigateOptionsMap = {}
+
   // MUTABLE. Used to avoid infinite recursion of 'setupNavigate' due to it
   // being called on mutation of DOM that it mutates.
   let oldNavigateOptions = {};
@@ -337,6 +340,7 @@
     oldNavigateOptions = {};
     currentNavigateOptions = {};
     currentNavigatePrefixesUsed = {};
+    currentUidToNavigateOptionsMap = {};
     navigateKeysPressed = '';
 
     finishNavigate = () => {
@@ -377,7 +381,7 @@
     debug('Creating navigation shortcut tips');
     try {
       if (!onlyLinks) {
-        const {navigateOptions, navigatePrefixesUsed} =
+        const {navigateOptions, navigatePrefixesUsed, uidToNavigateOptionsMap} =
               collectNavigateOptions();
         // Avoid infinite recursion. See comment on oldNavigateOptions.
         let different = false;
@@ -393,6 +397,7 @@
         }
         currentNavigateOptions = navigateOptions;
         currentNavigatePrefixesUsed = navigatePrefixesUsed;
+        currentUidToNavigateOptionsMap = uidToNavigateOptionsMap;
         oldNavigateOptions = navigateOptions;
         if (different) {
           debug('Different set of navigation options, so re-setting them.');
@@ -403,8 +408,16 @@
         }
       }
 
-      currentLinkOptions =
-        collectLinkOptions(currentNavigateOptions, currentNavigatePrefixesUsed);
+      // Reset aliasings before populating links.
+      for (const uid in currentUidToNavigateOptionsMap) {
+        const option = currentUidToNavigateOptionsMap[uid];
+        option.aliased = [];
+      }
+
+      currentLinkOptions = collectLinkOptions(
+        currentNavigateOptions,
+        currentNavigatePrefixesUsed,
+        currentUidToNavigateOptionsMap);
 
       // Finish navigation immediately if no tips to render.
       if (!rerenderTips(onlyLinks) && finishNavigate) {
@@ -468,6 +481,8 @@
             mustBeKeys: null,
             text: preprocessItemText(text),
             initials: getItemInitials(text),
+            aliased: [],
+            isNavigateOption: true,
             keepGoing: true,
           });
         });
@@ -505,6 +520,22 @@
     delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
     delete navigateOptions[LAST_BLOCK_KEY];
 
+    // For links that have a uid, collect a map from that to the options.
+    const uidToNavigateOptionsMap = {};
+    for (let keySequence in navigateOptions) {
+      const option = navigateOptions[keySequence];
+      if (option.element && option.element.attributes['href']) {
+        const href = option.element.attributes['href'].value;
+        if (href[0] === '/') {
+          const uidMatchResult = ID_FROM_HASH_REGEX.exec(href.slice(1));
+          if (uidMatchResult) {
+            const uid = uidMatchResult[1];
+            uidToNavigateOptionsMap[uid] = option;
+          }
+        }
+      }
+    }
+
     // Add key sequences for every block in article.
     const article = getUniqueClass(document, 'roam-article');
     if (article && article.firstChild) {
@@ -536,7 +567,7 @@
       addBlocks(navigateOptions, allPagesSearch, null, '');
     }
 
-    return {navigateOptions, navigatePrefixesUsed};
+    return {navigateOptions, navigatePrefixesUsed, uidToNavigateOptionsMap};
   }
 
   function findLastBlock(el) {
@@ -579,8 +610,8 @@
     }
   }
 
-  function collectLinkOptions(navigateOptions, navigatePrefixesUsed) {
-    const linksByUid = {};
+  function collectLinkOptions(navigateOptions, navigatePrefixesUsed, uidToNavigateOptionsMap) {
+    const linksByUid = { ...uidToNavigateOptionsMap };
 
     // Add key sequences for every link in article.
     const article = getUniqueClass(document, 'roam-article');
@@ -600,7 +631,10 @@
 
     const linkItems = [];
     for (const uid of Object.keys(linksByUid)) {
-      linkItems.push(linksByUid[uid]);
+      const option = linksByUid[uid];
+      if (!option['isNavigateOption']) {
+        linkItems.push(option);
+      }
     }
 
     const {options} =
@@ -703,13 +737,12 @@
       updateBreadcrumbs();
       // ensureSidebarOpen();
       removeOldTips(onlyLinks);
-      if (!onlyLinks) {
-        for (const k of Object.keys(currentNavigateOptions)) {
-          renderedAny = renderTip(k, currentNavigateOptions[k]) || renderedAny;
-        }
+      for (const k of Object.keys(currentNavigateOptions)) {
+        renderedAny = renderTip(k, currentNavigateOptions[k], onlyLinks) || renderedAny;
       }
       for (const k of Object.keys(currentLinkOptions)) {
-        renderedAny = renderTip(k, currentLinkOptions[k]) || renderedAny;
+        const option = currentLinkOptions[k];
+        renderedAny = renderTip(k, option, false) || renderedAny;
       }
     });
     // Boolean result is false if navigation mode should be exited due
@@ -717,18 +750,24 @@
     return onlyLinks || renderedAny;
   }
 
-  function renderTip(key, option) {
+  function renderTip(key, option, skipRenderingMain) {
     const prefix = key.slice(0, navigateKeysPressed.length);
     const rest = key.slice(navigateKeysPressed.length);
     if (prefix === navigateKeysPressed) {
       if (option.element) {
-        renderTipInternal(prefix, rest, option.element, option.extraClasses);
+        if (!skipRenderingMain) {
+          renderTipInternal(prefix, rest, option.element, option.extraClasses);
+        }
       } else {
-        error('element not set in', option);
+        error('element not set in', key, option);
       }
       if (option.aliased) {
         for (const el of option.aliased) {
-          renderTipInternal(prefix, rest, el, option.extraClasses);
+          // HACK: assumes that all aliases are links, which is
+          // currently true.
+          const extraClasses = option.extraClasses ? [...option.extraClasses] : [];
+          extraClasses.push(LINK_HINT_CLASS);
+          renderTipInternal(prefix, rest, el, extraClasses);
         }
       }
       return true;
