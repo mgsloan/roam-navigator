@@ -174,11 +174,15 @@
         if (ACTIVATE_ON_NO_FOCUS && blockHighlighted && bodyFocused) {
           handleFocusIn();
         } else {
-          setupNavigate(false);
+          if (!setupNavigateCrashed) {
+            setupNavigate(false);
+          }
           registerScrollHandlers();
         }
       } else if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation) {
-        navigate();
+        if (!setupNavigateCrashed) {
+          navigate();
+        }
       } else if (ACTIVATE_ON_NO_FOCUS &&
                  !blockHighlighted &&
                  blockWasHighlighted &&
@@ -317,6 +321,9 @@
   // MUTABLE. Keys the user has pressed so far.
   let navigateKeysPressed = '';
 
+  // MUTABLE. Whether setupNavigate crashed last time.
+  let setupNavigateCrashed = false;
+
   // Switches to a navigation mode, where navigation targets are annotated
   // with letters to press to click.
   function navigate() {
@@ -391,6 +398,7 @@
           debug('Different set of navigation options, so re-setting them.');
         } else {
           debug('Same set of navigation options, so not re-rendering.');
+          setupNavigateCrashed = false;
           return;
         }
       }
@@ -403,9 +411,11 @@
         endNavigate();
       }
     } catch (ex) {
+      setupNavigateCrashed = true;
       endNavigate();
       throw ex;
     }
+    setupNavigateCrashed = false;
   }
 
   function collectNavigateOptions() {
