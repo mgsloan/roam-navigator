@@ -1939,7 +1939,7 @@
     '  position: relative;',
     '}',
     '#roam-right-sidebar-content .' + HINT_CLASS + ' {',
-    '  left: 0;',
+    '  left: -24px;',
     '}',
     '#right-sidebar > .flex-h-box > .' + HINT_CLASS + ' {',
     '  position: initial;',
