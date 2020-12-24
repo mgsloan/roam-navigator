@@ -196,6 +196,8 @@
       updateBreadcrumbs();
     });
 
+    window.addEventListener('resize', handleScrollOrResize);
+
     const observer = new MutationObserver(() => {
       if (!domMutationLevel) {
         handleChange();
@@ -253,18 +255,18 @@
   function registerScrollHandlers() {
     const rightScroller = getById('roam-right-sidebar-content');
     if (rightScroller) {
-      rightScroller.removeEventListener('scroll', handleScroll);
-      rightScroller.addEventListener('scroll', handleScroll);
+      rightScroller.removeEventListener('scroll', handleScrollOrResize);
+      rightScroller.addEventListener('scroll', handleScrollOrResize);
     }
     let mainScroller = getUniqueClass(document, 'roam-body-main');
     if (mainScroller && mainScroller.firstChild) {
       mainScroller = mainScroller.firstChild;
-      mainScroller.removeEventListener('scroll', handleScroll);
-      mainScroller.addEventListener('scroll', handleScroll);
+      mainScroller.removeEventListener('scroll', handleScrollOrResize);
+      mainScroller.addEventListener('scroll', handleScrollOrResize);
     }
   }
 
-  const handleScroll = throttle(20, () => {
+  const handleScrollOrResize = throttle(20, () => {
     if (isNavigating()) {
       setupNavigate(true);
     }
