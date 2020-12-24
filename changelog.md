@@ -1,5 +1,18 @@
 # roam-navigator changelog
 
+## Version 10
+
+* Makes breadcrumb links more reliably present. There were a couple
+  bugs which would sometimes cause them not to be displayed.
+
+* If a starred link is present in a page, it now uses the same key
+  sequence as displayed in the sidebar.
+
+* Fixes layout of sidebar navigation tips.
+
+* Changes key sequence for "All Pages" to be `ap` instead of `a`. This
+  frees up `a` to be used as a prefix in other links.
+
 ## Version 9
 
 * Fixes block navigation tips to work with new Roam DOM. See [#10][].
