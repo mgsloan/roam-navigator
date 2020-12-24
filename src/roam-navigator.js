@@ -1934,7 +1934,8 @@
     '  font-weight: bold;',
     '  font-size: 14px;',
     '  color: rgb(145, 154, 159);',
-    '  z-index: 2147483647;',
+    // z-index of left sidebar is 999
+    '  z-index: 998;',
     '}',
     '.' + HINT_TYPED_CLASS + ' {',
     '  color: rgb(206, 217, 224);',
