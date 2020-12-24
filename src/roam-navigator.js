@@ -1333,8 +1333,8 @@
   const IS_GRAPH_OVERVIEW_REGEX = /#\/app\/[^\/]*\/graph$/;
 
   const DAILY_NOTES_UID = "daily_notes";
-  const ALL_PAGES_UID = "all_pages";
   const GRAPH_OVERVIEW_UID = "graph_overview";
+  const ALL_PAGES_UID = "all_pages";
 
   function updateBreadcrumbs() {
     if (BREADCRUMBS_ENABLED) {
@@ -1343,8 +1343,8 @@
             document.querySelector('.roam-body-main .rm-title-display > span');
       const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
       const isDailyPage = IS_DAILY_NOTES_REGEX.exec(hash) !== null;
-      const isAllPages = IS_ALL_PAGES_REGEX.exec(hash) !== null;
       const isGraphOverview = IS_GRAPH_OVERVIEW_REGEX.exec(hash) !== null;
+      const isAllPages = IS_ALL_PAGES_REGEX.exec(hash) !== null;
       let title;
       let uid;
       if (pageTitleElement) {
@@ -1363,12 +1363,12 @@
       if (isDailyPage) {
         uid = DAILY_NOTES_UID;
         title = 'Daily Notes';
-      } else if (isAllPages) {
-        uid = ALL_PAGES_UID;
-        title = 'All Pages';
       } else if (isGraphOverview) {
         uid = GRAPH_OVERVIEW_UID;
         title = 'Graph Overview';
+      } else if (isAllPages) {
+        uid = ALL_PAGES_UID;
+        title = 'All Pages';
       } else {
         if (pageUidMatchResult) {
           uid = pageUidMatchResult[1];
