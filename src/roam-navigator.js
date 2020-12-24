@@ -266,7 +266,7 @@
     }
   }
 
-  const handleScrollOrResize = throttle(20, () => {
+  const handleScrollOrResize = throttle(100, () => {
     if (isNavigating()) {
       setupNavigate(true);
     }
