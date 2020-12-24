@@ -1271,8 +1271,21 @@
   // Regex used to extract id from hash portion of url.
   const ID_FROM_HASH_REGEX = /#\/app\/[^\/]*\/page\/([a-zA-Z0-9\-_]*)$/;
 
-  // Regex used to identify if the hash portion of the url is the daily page.
+  // Regex used to identify if the hash portion of the url is the
+  // daily page.
   const IS_DAILY_NOTES_REGEX = /#\/app\/[^\/]*$/;
+
+  // Regex used to identify if the hash portion of the url is the all
+  // pages page.
+  const IS_ALL_PAGES_REGEX = /#\/app\/[^\/]*\/search$/;
+
+  // Regex used to identify if the hash portion of the url is the
+  // graph overview page.
+  const IS_GRAPH_OVERVIEW_REGEX = /#\/app\/[^\/]*\/graph$/;
+
+  const DAILY_NOTES_UID = "daily_notes";
+  const ALL_PAGES_UID = "all_pages";
+  const GRAPH_OVERVIEW_UID = "graph_overview";
 
   function updateBreadcrumbs() {
     if (BREADCRUMBS_ENABLED) {
@@ -1281,11 +1294,13 @@
             document.querySelector('.roam-body-main .rm-title-display > span');
       const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
       const isDailyPage = IS_DAILY_NOTES_REGEX.exec(hash) !== null;
+      const isAllPages = IS_ALL_PAGES_REGEX.exec(hash) !== null;
+      const isGraphOverview = IS_GRAPH_OVERVIEW_REGEX.exec(hash) !== null;
       let title;
       let uid;
       if (pageTitleElement) {
         title = pageTitleElement.innerText;
-      } else if (!isDailyPage) {
+      } else if (!isDailyPage && !isAllPages && !isGraphOverview) {
         if (!pageUidMatchResult) {
           // Fall back on using document title, this is used for cases
           // like the graph overview / all pages.
@@ -1297,8 +1312,14 @@
         }
       }
       if (isDailyPage) {
-        uid = 'daily_notes';
+        uid = DAILY_NOTES_UID;
         title = 'Daily Notes';
+      } else if (isAllPages) {
+        uid = ALL_PAGES_UID;
+        title = 'All Pages';
+      } else if (isGraphOverview) {
+        uid = GRAPH_OVERVIEW_UID;
+        title = 'Graph Overview';
       } else {
         if (pageUidMatchResult) {
           uid = pageUidMatchResult[1];
