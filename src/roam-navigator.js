@@ -1447,7 +1447,8 @@
         container.appendChild(breadcrumbSpan);
       }
 
-      withUnique(document, '.roam-topbar > .flex-h-box', (topbar) => {
+      const topbar = selectUnique(document, '.roam-topbar > .flex-h-box');
+      if (topbar) {
         const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
         const sidebarButton = getUniqueClass(topbar, buttonClasses);
         if (sidebarButton && sidebarButton.nextSibling) {
@@ -1455,7 +1456,7 @@
         } else {
           topbar.insertBefore(container, topbar.firstChild);
         }
-      });
+      }
     });
   }
 
