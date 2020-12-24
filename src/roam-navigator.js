@@ -17,7 +17,7 @@
   const GRAPH_OVERVIEW_KEY = 'o' + ENTER_SYMBOL;
 
   // Key sequence to navigate to all pages view.
-  const ALL_PAGES_KEY = 'a';
+  const ALL_PAGES_KEYS = 'ap';
 
   // Key sequence prefix for sidebar blocks.
   const SIDEBAR_BLOCK_PREFIX = 's';
@@ -437,10 +437,10 @@
           keepGoing: true,
         });
       } else if (text === 'ALL PAGES' ||
-                 text === ALL_PAGES_KEY + '\nALL PAGES') {
+                 text === ALL_PAGES_KEYS + '\nALL PAGES') {
         navigateItems.push({
           element: logButton,
-          mustBeKeys: ALL_PAGES_KEY,
+          mustBeKeys: ALL_PAGES_KEYS,
           keepGoing: true,
         });
       } else {
@@ -804,7 +804,6 @@
   function filterJumpKeys(keys) {
     return keys
         .replace(DAILY_NOTES_KEY, '')
-        .replace(ALL_PAGES_KEY, '')
         .replace(SIDEBAR_BLOCK_PREFIX, '')
         .replace(LAST_BLOCK_KEY, '');
   }
