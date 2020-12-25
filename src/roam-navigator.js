@@ -320,7 +320,7 @@
   let currentNavigatePrefixesUsed = {};
 
   // MUTABLE. Map from uids to navigate options.
-  let currentUidToNavigateOptionsMap = {}
+  let currentUidToNavigateOptionsMap = {};
 
   // MUTABLE. Used to avoid infinite recursion of 'setupNavigate' due to it
   // being called on mutation of DOM that it mutates.
@@ -417,15 +417,15 @@
       }
 
       // Reset aliasings before populating links.
-      for (const uid in currentUidToNavigateOptionsMap) {
+      for (const uid of Object.keys(currentUidToNavigateOptionsMap)) {
         const option = currentUidToNavigateOptionsMap[uid];
         option.aliased = [];
       }
 
       currentLinkOptions = collectLinkOptions(
-        currentNavigateOptions,
-        currentNavigatePrefixesUsed,
-        currentUidToNavigateOptionsMap);
+          currentNavigateOptions,
+          currentNavigatePrefixesUsed,
+          currentUidToNavigateOptionsMap);
 
       // Finish navigation immediately if no tips to render.
       if (!rerenderTips(onlyLinks) && finishNavigate) {
@@ -543,7 +543,7 @@
     delete navigateOptions[CLOSE_BUTTON_PREFIX];
 
     // For links that have a uid, collect a map from that to the options.
-    for (let keySequence in navigateOptions) {
+    for (const keySequence of Object.keys(navigateOptions)) {
       const option = navigateOptions[keySequence];
       if (option.element && option.element.attributes['href']) {
         const href = option.element.attributes['href'].value;
@@ -644,8 +644,11 @@
     }
   }
 
-  function collectLinkOptions(navigateOptions, navigatePrefixesUsed, uidToNavigateOptionsMap) {
-    const linksByUid = { ...uidToNavigateOptionsMap };
+  function collectLinkOptions(
+      navigateOptions,
+      navigatePrefixesUsed,
+      uidToNavigateOptionsMap) {
+    const linksByUid = Object.assign({}, uidToNavigateOptionsMap);
 
     // Add key sequences for every link in article.
     const article = getUniqueClass(document, 'roam-article');
@@ -772,11 +775,12 @@
       // ensureSidebarOpen();
       removeOldTips(onlyLinks);
       for (const k of Object.keys(currentNavigateOptions)) {
-        renderedAny = renderTip(k, currentNavigateOptions[k], onlyLinks) || renderedAny;
+        renderedAny = renderedAny ||
+            renderTip(k, currentNavigateOptions[k], onlyLinks);
       }
       for (const k of Object.keys(currentLinkOptions)) {
         const option = currentLinkOptions[k];
-        renderedAny = renderTip(k, option, false) || renderedAny;
+        renderedAny = renderedAny || renderTip(k, option, false);
       }
     });
     // Boolean result is false if navigation mode should be exited due
@@ -799,7 +803,8 @@
         for (const el of option.aliased) {
           // HACK: assumes that all aliases are links, which is
           // currently true.
-          const extraClasses = option.extraClasses ? [...option.extraClasses] : [];
+          const extraClasses =
+                option.extraClasses ? [...option.extraClasses] : [];
           extraClasses.push(LINK_HINT_CLASS);
           renderTipInternal(prefix, rest, el, extraClasses);
         }
@@ -823,7 +828,7 @@
         el.id === 'block-input-ghost') {
       findParent(el, matchingClass('rm-block-main')).prepend(tip);
     } else if (extraClasses && extraClasses.findIndex((x) =>
-                 x === LEFT_SIDEBAR_TOGGLE_CLASS ||
+      x === LEFT_SIDEBAR_TOGGLE_CLASS ||
                  x === RIGHT_SIDEBAR_CLOSE_CLASS ||
                  x === SIDE_PAGE_CLOSE_CLASS) >= 0) {
       // Typically if the parent doesn't exist, then a re-render is
@@ -1260,7 +1265,9 @@
       // Hover to open sidebar
       mouseOver(el);
       closeSidebar = false;
-    } else if (matchingClass('bp3-icon-menu-open', 'bp3-icon-menu-closed')(el)) {
+    } else if (matchingClass(
+        'bp3-icon-menu-open',
+        'bp3-icon-menu-closed')(el)) {
       click(el);
       // Sidebar toggling tip doesn't promptly update, so defer a
       // couple re-renders.
@@ -1298,8 +1305,12 @@
       closeSidebarIfOpened();
     }
     if (scheduleRerender) {
-      setTimeout(() => { rerenderTips(false); }, 50);
-      setTimeout(() => { rerenderTips(false); }, 100);
+      setTimeout(() => {
+        rerenderTips(false);
+      }, 50);
+      setTimeout(() => {
+        rerenderTips(false);
+      }, 100);
     }
   }
 
@@ -1381,9 +1392,9 @@
   // graph overview page.
   const IS_GRAPH_OVERVIEW_REGEX = /#\/app\/[^\/]*\/graph$/;
 
-  const DAILY_NOTES_UID = "daily_notes";
-  const GRAPH_OVERVIEW_UID = "graph_overview";
-  const ALL_PAGES_UID = "all_pages";
+  const DAILY_NOTES_UID = 'daily_notes';
+  const GRAPH_OVERVIEW_UID = 'graph_overview';
+  const ALL_PAGES_UID = 'all_pages';
 
   function updateBreadcrumbs() {
     if (BREADCRUMBS_ENABLED) {
