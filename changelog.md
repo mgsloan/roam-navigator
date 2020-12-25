@@ -1,5 +1,11 @@
 # roam-navigator changelog
 
+## Version 11
+
+* Released immediately after version 10, my last change cleaning up
+  some eslints broke everything.  This version restores functionality
+  :)
+
 ## Version 10
 
 * Adds ability to close right sidebar pages. See [#6][].
