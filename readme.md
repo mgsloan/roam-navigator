@@ -1,9 +1,10 @@
 # ![](etc/icon48.png) Roam Navigator
 
-Wherever you may [Roam][] :metal:, it is essential to have an
-efficient navigator. This browser extension adds a navigation mode to
-[Roam][] which presents visual navigation hints, that can be typed in
-order to select the corresponding link, block, or button.
+Wherever you may [Roam][Roam Research] :metal:, it is essential to
+have an efficient navigator. This browser extension adds a navigation
+mode to [Roam Research][] which presents visual navigation hints, that
+can be typed in order to select the corresponding link, block, or
+button.
 
 * [ Extension for Google Chrome
     ![Chrome Users](https://img.shields.io/chrome-web-store/users/jdnejinifclpmdnhchmadmjcmcjpcpbj.svg)
