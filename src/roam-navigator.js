@@ -775,12 +775,12 @@
       // ensureSidebarOpen();
       removeOldTips(onlyLinks);
       for (const k of Object.keys(currentNavigateOptions)) {
-        renderedAny = renderedAny ||
-            renderTip(k, currentNavigateOptions[k], onlyLinks);
+        renderedAny =
+          renderTip(k, currentNavigateOptions[k], onlyLinks) || renderedAny;
       }
       for (const k of Object.keys(currentLinkOptions)) {
         const option = currentLinkOptions[k];
-        renderedAny = renderedAny || renderTip(k, option, false);
+        renderedAny = renderTip(k, option, false) || renderedAny;
       }
     });
     // Boolean result is false if navigation mode should be exited due
