@@ -13,7 +13,9 @@
 * Changes key sequence for "All Pages" to be `ap` instead of `a`. This
   frees up `a` to be used as a prefix in other links.
 
-* Fixes display of left sidebar toggle.
+* Fixes display of sidebar toggle / close buttons.
+
+* A bunch of other misc improvements.
 
 ## Version 9
 

@@ -302,7 +302,8 @@
   const HINT_TYPED_CLASS = 'roam_navigator_hint_typed';
   const LINK_HINT_CLASS = 'roam_navigator_link_hint';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
-  const SIDEBAR_TOGGLE_CLASS = 'roam_navigator_sidebar_toggle';
+  const LEFT_SIDEBAR_TOGGLE_CLASS = 'roam_navigator_left_sidebar_toggle';
+  const RIGHT_SIDEBAR_CLOSE_CLASS = 'roam_navigator_right_sidebar_close';
 
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
@@ -509,7 +510,7 @@
           element: button,
           mustBeKeys: LEFT_SIDEBAR_KEY,
           keepGoing: true,
-          extraClasses: [SIDEBAR_TOGGLE_CLASS],
+          extraClasses: [LEFT_SIDEBAR_TOGGLE_CLASS],
         });
       }
     });
@@ -521,7 +522,7 @@
           element: button,
           mustBeKeys: LEFT_SIDEBAR_KEY,
           keepGoing: true,
-          extraClasses: [SIDEBAR_TOGGLE_CLASS],
+          extraClasses: [LEFT_SIDEBAR_TOGGLE_CLASS],
         });
       }
     });
@@ -569,6 +570,7 @@
           navigateOptions['sc'] = {
             element: button,
             keepGoing: true,
+            extraClasses: [RIGHT_SIDEBAR_CLOSE_CLASS],
           };
         });
       });
@@ -801,8 +803,9 @@
     if (matchingClass('rm-block-text')(el) ||
         el.id === 'block-input-ghost') {
       findParent(el, matchingClass('rm-block-main')).prepend(tip);
-    } else if (extraClasses &&
-               extraClasses.findIndex((x) => x === SIDEBAR_TOGGLE_CLASS) >= 0) {
+    } else if (extraClasses && extraClasses.findIndex((x) =>
+                                      x === LEFT_SIDEBAR_TOGGLE_CLASS ||
+                                      x === RIGHT_SIDEBAR_CLOSE_CLASS) >= 0) {
       // Typically if the parent doesn't exist, then a re-render is
       // scheduled to properly render the sidebar toggle.
       if (el.parentElement) {
@@ -1965,10 +1968,6 @@
     '#roam-right-sidebar-content .' + HINT_CLASS + ' {',
     '  left: -24px;',
     '}',
-    '#right-sidebar > .flex-h-box > .' + HINT_CLASS + ' {',
-    '  position: initial;',
-    '  height: 0;',
-    '}',
     '.rm-title-display .' + HINT_CLASS + ' {',
     '  margin-top: 14px;',
     '}',
@@ -2015,15 +2014,23 @@
     '.' + NAVIGATE_CLASS + ' .bp3-icon-menu-closed {',
     '  opacity: initial !important;',
     '}',
-    '.' + SIDEBAR_TOGGLE_CLASS + ' {',
+    '.' + LEFT_SIDEBAR_TOGGLE_CLASS + ' {',
     '  width: 0;',
     '  height: 0;',
     '  position: relative;',
     '  top: -22px;',
     '  left: 8px;',
     '}',
-    '.roam-sidebar-content .' + SIDEBAR_TOGGLE_CLASS + ' {',
+    '.roam-sidebar-content .' + LEFT_SIDEBAR_TOGGLE_CLASS + ' {',
     '  left: 42px;',
+    '}',
+    // Fix positioning of sidebar close tip
+    '#right-sidebar .flex-h-box > .' + HINT_CLASS + ' {',
+    '  position: relative;',
+    '  width: 0;',
+    '  height: 0;',
+    '  top: -16px;',
+    '  left: 0;',
     '}',
   ].join('\n'));
 
