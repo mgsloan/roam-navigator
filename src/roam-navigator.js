@@ -302,6 +302,7 @@
   const HINT_TYPED_CLASS = 'roam_navigator_hint_typed';
   const LINK_HINT_CLASS = 'roam_navigator_link_hint';
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
+  const SIDEBAR_TOGGLE_CLASS = 'roam_navigator_sidebar_toggle';
 
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
@@ -508,6 +509,7 @@
           element: button,
           mustBeKeys: LEFT_SIDEBAR_KEY,
           keepGoing: true,
+          extraClasses: [SIDEBAR_TOGGLE_CLASS],
         });
       }
     });
@@ -519,6 +521,7 @@
           element: button,
           mustBeKeys: LEFT_SIDEBAR_KEY,
           keepGoing: true,
+          extraClasses: [SIDEBAR_TOGGLE_CLASS],
         });
       }
     });
@@ -798,13 +801,12 @@
     if (matchingClass('rm-block-text')(el) ||
         el.id === 'block-input-ghost') {
       findParent(el, matchingClass('rm-block-main')).prepend(tip);
-    } else if (matchingClass('bp3-button')(el)) {
-      const parent = findParent(el, matchingClass('rm-block-main'));
-      if (parent) {
-        parent.firstElementChild.after(tip);
-      } else {
-        // TODO: Make this case not happen.
-        debug('Couldn\'t find expected parent of left sidebar toggle', el);
+    } else if (extraClasses &&
+               extraClasses.findIndex((x) => x === SIDEBAR_TOGGLE_CLASS) >= 0) {
+      // Typically if the parent doesn't exist, then a re-render is
+      // scheduled to properly render the sidebar toggle.
+      if (el.parentElement) {
+        el.parentElement.insertBefore(tip, el);
       }
     } else {
       el.prepend(tip);
@@ -1207,6 +1209,7 @@
   }
 
   function navigateToElement(ev, el, f) {
+    let scheduleRerender = false;
     let closeSidebar = true;
     if (matchingClass('rm-block-text')(el)) {
       const blockParent = el.parentElement;
@@ -1228,8 +1231,14 @@
       withUniqueTag(el, 'span',
           not(matchingClass(HINT_TYPED_CLASS)), clickFunc);
     } else if (matchingClass('bp3-icon-menu')(el)) {
+      // Hover to open sidebar
       mouseOver(el);
       closeSidebar = false;
+    } else if (matchingClass('bp3-icon-menu-open', 'bp3-icon-menu-closed')(el)) {
+      click(el);
+      // Sidebar toggling tip doesn't promptly update, so defer a
+      // couple re-renders.
+      scheduleRerender = true;
     /* Aborted attempt at opening links in new tab without switching to it
     } else if (el.attributes['href']) {
       if (ev.shiftKey || !IS_CHROME) {
@@ -1261,6 +1270,10 @@
     }
     if (closeSidebar) {
       closeSidebarIfOpened();
+    }
+    if (scheduleRerender) {
+      setTimeout(() => { rerenderTips(false); }, 50);
+      setTimeout(() => { rerenderTips(false); }, 100);
     }
   }
 
@@ -1997,6 +2010,20 @@
     '  text-overflow: ellipsis;',
     '  border-left: 0.5px solid #666;',
     '  padding-left: 5px;',
+    '}',
+    // Shows sidebar toggle
+    '.' + NAVIGATE_CLASS + ' .bp3-icon-menu-closed {',
+    '  opacity: initial !important;',
+    '}',
+    '.' + SIDEBAR_TOGGLE_CLASS + ' {',
+    '  width: 0;',
+    '  height: 0;',
+    '  position: relative;',
+    '  top: -22px;',
+    '  left: 8px;',
+    '}',
+    '.roam-sidebar-content .' + SIDEBAR_TOGGLE_CLASS + ' {',
+    '  left: 42px;',
     '}',
   ].join('\n'));
 

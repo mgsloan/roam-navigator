@@ -13,6 +13,8 @@
 * Changes key sequence for "All Pages" to be `ap` instead of `a`. This
   frees up `a` to be used as a prefix in other links.
 
+* Fixes display of left sidebar toggle.
+
 ## Version 9
 
 * Fixes block navigation tips to work with new Roam DOM. See [#10][].
