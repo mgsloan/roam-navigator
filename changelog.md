@@ -2,6 +2,8 @@
 
 ## Version 10
 
+* Adds ability to close right sidebar pages. See [#6][].
+
 * Makes breadcrumb links more reliably present. There were a couple
   bugs which would sometimes cause them not to be displayed.
 
@@ -16,6 +18,8 @@
 * Fixes display of sidebar toggle / close buttons.
 
 * A bunch of other misc improvements.
+
+[#6]: https://github.com/mgsloan/roam-navigator/issues/6
 
 ## Version 9
 
