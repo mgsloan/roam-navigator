@@ -22,6 +22,9 @@
   // Key sequence prefix for sidebar blocks.
   const SIDEBAR_BLOCK_PREFIX = 's';
 
+  // Key sequence prefix for sidebar close buttons.
+  const CLOSE_BUTTON_PREFIX = 'x';
+
   // Key sequence for last block.
   const LAST_BLOCK_KEY = 'd';
 
@@ -304,6 +307,7 @@
   const NAVIGATE_CLASS = 'roam_navigator_navigating';
   const LEFT_SIDEBAR_TOGGLE_CLASS = 'roam_navigator_left_sidebar_toggle';
   const RIGHT_SIDEBAR_CLOSE_CLASS = 'roam_navigator_right_sidebar_close';
+  const SIDE_PAGE_CLOSE_CLASS = 'roam_navigator_side_page_close';
 
   // MUTABLE. When set, this function should be called when navigate mode
   // finished.
@@ -445,6 +449,8 @@
       mustBeKeys: SIDEBAR_BLOCK_PREFIX,
     }, {
       mustBeKeys: LAST_BLOCK_KEY,
+    }, {
+      mustBeKeys: CLOSE_BUTTON_PREFIX,
     }];
 
     // Add top level navigations to the list of navigateItems
@@ -534,6 +540,7 @@
     // Remove reserved keys.
     delete navigateOptions[SIDEBAR_BLOCK_PREFIX];
     delete navigateOptions[LAST_BLOCK_KEY];
+    delete navigateOptions[CLOSE_BUTTON_PREFIX];
 
     // For links that have a uid, collect a map from that to the options.
     for (let keySequence in navigateOptions) {
@@ -572,6 +579,18 @@
             keepGoing: true,
             extraClasses: [RIGHT_SIDEBAR_CLOSE_CLASS],
           };
+        });
+        let closeButtonCounter = 0;
+        withClass(rightSidebar, 'bp3-icon-cross', (closeButton) => {
+          if (closeButtonCounter < CLOSE_BUTTON_KEYS.length) {
+            const key = 'x' + CLOSE_BUTTON_KEYS[closeButtonCounter];
+            navigateOptions[key] = {
+              element: closeButton,
+              keepGoing: true,
+              extraClasses: [SIDE_PAGE_CLOSE_CLASS],
+            };
+          }
+          closeButtonCounter++;
         });
       });
     }
@@ -804,13 +823,16 @@
         el.id === 'block-input-ghost') {
       findParent(el, matchingClass('rm-block-main')).prepend(tip);
     } else if (extraClasses && extraClasses.findIndex((x) =>
-                                      x === LEFT_SIDEBAR_TOGGLE_CLASS ||
-                                      x === RIGHT_SIDEBAR_CLOSE_CLASS) >= 0) {
+                 x === LEFT_SIDEBAR_TOGGLE_CLASS ||
+                 x === RIGHT_SIDEBAR_CLOSE_CLASS ||
+                 x === SIDE_PAGE_CLOSE_CLASS) >= 0) {
       // Typically if the parent doesn't exist, then a re-render is
       // scheduled to properly render the sidebar toggle.
       if (el.parentElement) {
         el.parentElement.insertBefore(tip, el);
       }
+    } else if (matchingClass('bp3-icon-cross')(el)) {
+      el.prepend(tip);
     } else {
       el.prepend(tip);
     }
@@ -876,6 +898,7 @@
   const JUMP_KEYS = HOME_ROW_KEYS + 'qwertyuiopzxcvbnm';
   const FILTERED_HOME_ROW_KEYS = filterJumpKeys(HOME_ROW_KEYS);
   const FILTERED_JUMP_KEYS = filterJumpKeys(JUMP_KEYS);
+  const CLOSE_BUTTON_KEYS = '0123456789' + JUMP_KEYS;
 
   // Assign keys to items based on their text.
   function assignKeysToItems(items, otherPrefixesUsed, otherOptions) {
@@ -2025,12 +2048,19 @@
     '  left: 42px;',
     '}',
     // Fix positioning of sidebar close tip
-    '#right-sidebar .flex-h-box > .' + HINT_CLASS + ' {',
+    '.' + RIGHT_SIDEBAR_CLOSE_CLASS + ' {',
     '  position: relative;',
     '  width: 0;',
     '  height: 0;',
     '  top: -16px;',
     '  left: 0;',
+    '}',
+    '#roam-right-sidebar-content .' + SIDE_PAGE_CLOSE_CLASS + ' {',
+    '  position: relative;',
+    '  width: 0;',
+    '  height: 0;',
+    '  top: -16px !important;',
+    '  left: 4px !important;',
     '}',
   ].join('\n'));
 
