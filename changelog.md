@@ -1,5 +1,12 @@
 # roam-navigator changelog
 
+## Version 12
+
+* Scopes breadcrumbs per graph.
+
+* Improvements to the selection of non-mnemonic key sequences for
+  links.
+
 ## Version 11
 
 * Released immediately after version 10, my last change cleaning up
