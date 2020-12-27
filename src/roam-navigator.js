@@ -1,5 +1,9 @@
+/* globals roam42, Cookies, roamNavigatorSettings, iziToast */
+
 'use strict';
 {
+  roam42.roamNavigator = {};
+
   // Set to true to enable debug logging.
   const DEBUG = false;
 
@@ -26,7 +30,7 @@
   const CLOSE_BUTTON_PREFIX = 'x';
 
   // Key sequence for last block.
-  const LAST_BLOCK_KEY = 'd';
+  const LAST_BLOCK_KEY = 'b';
 
   // Key to scroll up a bit.
   const SCROLL_UP_KEY = 'ArrowUp';
@@ -52,13 +56,61 @@
     }
   }
 
+  const getRoamNavigator_IsEnabled = ()=>{
+    if( Cookies.get('RoamNavigator_IsEnabled') === 'true' ) {
+      return true
+    } else {
+      return false
+    }
+  }
+  window.getRoamNavigator_IsEnabled = getRoamNavigator_IsEnabled
+
+  const setRoamNavigator_IsEnabled = (val)=>{
+    if(val == true) {
+      Cookies.set('RoamNavigator_IsEnabled', 'true', { expires: 365 })
+    } else {
+      Cookies.set('RoamNavigator_IsEnabled', 'false', { expires: 365 })
+    }
+  }
+
+  let roamNavigatorEnabled = getRoamNavigator_IsEnabled()
+
+  const roamNavigatorStatusToast = ()=> {
+    var status = getRoamNavigator_IsEnabled()
+    iziToast.show({
+      timeout: 20000,
+      theme: 'dark',
+      title: 'Deep Jump Navigation',
+      message: 'Status:',
+      position: 'bottomRight',
+      progressBarColor: 'rgb(0, 255, 184)',
+      displayMode: 2,
+      buttons: [
+      ['<button>Enabled</button>', function (instance, toast) {
+          setRoamNavigator_IsEnabled(true)
+          roamNavigatorEnabled = true
+          instance.hide({transitionOut: 'fadeOutUp'}, toast, 'buttonName');
+      }, status],
+      ['<button>Disabled</button>', function (instance, toast) {
+          setRoamNavigator_IsEnabled(false)
+          roamNavigatorEnabled = false
+          instance.hide({transitionOut: 'fadeOutDown'}, toast, 'buttonName');
+      }, !status],
+      ]
+    })
+  }
+
+  window.roamNavigatorStatusToast = roamNavigatorStatusToast
+
+  //Roam42: End
+
   // Set to true to activate navigation mode when body is focused.
   const ACTIVATE_ON_NO_FOCUS =
-        readSetting('activate-on-no-focus', true);
+        readSetting('activate-on-no-focus', false);
 
   // Set to true to activate navigation mode on startup.
   const ACTIVATE_ON_STARTUP =
-        readSetting('activate-on-startup', true);
+        readSetting('activate-on-startup', false);
 
   // Set to true to respond to scroll keys outside navigate mode.
   const SCROLL_OUTSIDE_NAVIGATE_MODE =
@@ -105,6 +157,12 @@
       }
       // Ignore keystrokes pressed with modifier keys, as they might
       // be used by other extensions.
+
+      if (!roamNavigatorEnabled) {
+        // navigator disabled, don't go further
+        return;
+      }
+
       if (ev.ctrlKey ||
           (ev.altKey && (isNavigating() || ev.key !== START_NAVIGATE_KEY))) {
         delete keysToIgnore[ev.key];
@@ -174,7 +232,7 @@
       debug('DOM mutation. blockHighlighted = ', blockHighlighted,
           'blockWasHighlighted = ', blockWasHighlighted);
       if (isNavigating()) {
-        if (ACTIVATE_ON_NO_FOCUS && blockHighlighted && bodyFocused) {
+        if (ACTIVATE_ON_NO_FOCUS && roamNavigatorEnabled && blockHighlighted && bodyFocused) {
           handleFocusIn();
         } else {
           if (!setupNavigateCrashed) {
@@ -182,7 +240,7 @@
           }
           registerScrollHandlers();
         }
-      } else if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation) {
+      } else if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation && roamNavigatorEnabled) {
         if (!setupNavigateCrashed) {
           navigate();
         }
@@ -192,7 +250,7 @@
                  bodyFocused) {
         handleFocusOut();
       }
-      if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation) {
+      if (ACTIVATE_ON_STARTUP && isReady && !initiatedNavigation && roamNavigatorEnabled) {
         initiatedNavigation = true;
       }
       blockWasHighlighted = blockHighlighted;
@@ -213,7 +271,7 @@
     });
 
     // Watch for DOM changes, to know when to re-render tips.
-    if (ACTIVATE_ON_NO_FOCUS) {
+    if (ACTIVATE_ON_NO_FOCUS  && roamNavigatorEnabled) {
       document.addEventListener('focusout', (ev) => {
         if (getInputTarget(ev) && document.activeElement === document.body) {
           handleFocusOut();
