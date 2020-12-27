@@ -859,7 +859,10 @@
   */
 
   function closeSidebarIfOpened() {
-    withUniqueClass(document, 'roam-body-main', all, mouseOver);
+    bodyMain = getUniqueClass(document, 'roam-body-main');
+    if (bodyMain) {
+      mouseOver(bodyMain);
+    }
   }
 
   // Lowercase and take only alphanumeric.
