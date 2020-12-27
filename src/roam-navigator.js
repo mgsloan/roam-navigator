@@ -454,59 +454,61 @@
     }];
 
     // Add top level navigations to the list of navigateItems
-    withClass(sidebar, 'log-button', (logButton) => {
-      const text = logButton.innerText;
-      if (text === 'DAILY NOTES' ||
-          text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
-        const option = {
-          element: logButton,
-          mustBeKeys: DAILY_NOTES_KEY,
-          keepGoing: true,
-          isNavigateOption: true,
-        };
-        navigateItems.push(option);
-        uidToNavigateOptionsMap[DAILY_NOTES_UID] = option;
-      } else if (text === 'GRAPH OVERVIEW' ||
-                 text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
-        const option = {
-          element: logButton,
-          mustBeKeys: GRAPH_OVERVIEW_KEY,
-          keepGoing: true,
-          isNavigateOption: true,
-        };
-        navigateItems.push(option);
-        uidToNavigateOptionsMap[GRAPH_OVERVIEW_UID] = option;
-      } else if (text === 'ALL PAGES' ||
-                 text === ALL_PAGES_KEYS + '\nALL PAGES') {
-        const option = {
-          element: logButton,
-          mustBeKeys: ALL_PAGES_KEYS,
-          keepGoing: true,
-          isNavigateOption: true,
-        };
-        navigateItems.push(option);
-        uidToNavigateOptionsMap[ALL_PAGES_UID] = option;
-      } else {
-        error('Unhandled .log-button:', text);
-      }
-    });
-
-    // Add starred shortcuts to the list of navigateItems
-    withUniqueClass(sidebar, 'starred-pages', all, (starredPages) => {
-      withTag(starredPages, 'a', (item) => {
-        withUniqueClass(item, 'page', all, (page) => {
-          const text = page.innerText;
-          navigateItems.push({
-            element: item,
-            mustBeKeys: null,
-            text: preprocessItemText(text),
-            initials: getItemInitials(text),
-            isNavigateOption: true,
+    if (sidebar) {
+      withClass(sidebar, 'log-button', (logButton) => {
+        const text = logButton.innerText;
+        if (text === 'DAILY NOTES' ||
+            text === DAILY_NOTES_KEY + '\nDAILY NOTES') {
+          const option = {
+            element: logButton,
+            mustBeKeys: DAILY_NOTES_KEY,
             keepGoing: true,
+            isNavigateOption: true,
+          };
+          navigateItems.push(option);
+          uidToNavigateOptionsMap[DAILY_NOTES_UID] = option;
+        } else if (text === 'GRAPH OVERVIEW' ||
+                   text === GRAPH_OVERVIEW_KEY + '\nGRAPH OVERVIEW') {
+          const option = {
+            element: logButton,
+            mustBeKeys: GRAPH_OVERVIEW_KEY,
+            keepGoing: true,
+            isNavigateOption: true,
+          };
+          navigateItems.push(option);
+          uidToNavigateOptionsMap[GRAPH_OVERVIEW_UID] = option;
+        } else if (text === 'ALL PAGES' ||
+                   text === ALL_PAGES_KEYS + '\nALL PAGES') {
+          const option = {
+            element: logButton,
+            mustBeKeys: ALL_PAGES_KEYS,
+            keepGoing: true,
+            isNavigateOption: true,
+          };
+          navigateItems.push(option);
+          uidToNavigateOptionsMap[ALL_PAGES_UID] = option;
+        } else {
+          error('Unhandled .log-button:', text);
+        }
+      });
+
+      // Add starred shortcuts to the list of navigateItems
+      withUniqueClass(sidebar, 'starred-pages', all, (starredPages) => {
+        withTag(starredPages, 'a', (item) => {
+          withUniqueClass(item, 'page', all, (page) => {
+            const text = page.innerText;
+            navigateItems.push({
+              element: item,
+              mustBeKeys: null,
+              text: preprocessItemText(text),
+              initials: getItemInitials(text),
+              isNavigateOption: true,
+              keepGoing: true,
+            });
           });
         });
       });
-    });
+    }
 
     withUniqueClass(document, 'roam-topbar', all, (topbar) => {
       const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
