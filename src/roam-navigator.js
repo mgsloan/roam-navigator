@@ -859,7 +859,7 @@
   */
 
   function closeSidebarIfOpened() {
-    bodyMain = getUniqueClass(document, 'roam-body-main');
+    const bodyMain = getUniqueClass(document, 'roam-body-main');
     if (bodyMain) {
       mouseOver(bodyMain);
     }
