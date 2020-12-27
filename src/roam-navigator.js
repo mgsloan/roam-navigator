@@ -1074,11 +1074,11 @@
       // hope of finding a more stable option.
       /* eslint-disable */
       if (item.uid &&
-          (addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, FILTERED_HOME_ROW_KEYS), item) ||
-           addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, FILTERED_JUMP_KEYS), item) ||
-           addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, FILTERED_HOME_ROW_KEYS), item) ||
-           addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, FILTERED_JUMP_KEYS), item) ||
-           addResult(uidToJumpKeys(item.uid, FILTERED_JUMP_KEYS, FILTERED_JUMP_KEYS), item))) {
+          (addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, HOME_ROW_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid, FILTERED_HOME_ROW_KEYS, JUMP_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, HOME_ROW_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid + '1', FILTERED_HOME_ROW_KEYS, JUMP_KEYS), item) ||
+           addResult(uidToJumpKeys(item.uid, FILTERED_JUMP_KEYS, JUMP_KEYS), item))) {
       /* eslint-enable */
         items.splice(q, 1);
         q--;
