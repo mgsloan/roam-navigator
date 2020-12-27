@@ -1,5 +1,9 @@
 # roam-navigator changelog
 
+## Version 13
+
+* Fixes a minor bug in last version, caused occasional error logs.
+
 ## Version 12
 
 * Scopes breadcrumbs per graph.
