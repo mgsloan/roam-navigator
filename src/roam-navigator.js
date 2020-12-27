@@ -1371,8 +1371,9 @@
    * Recent history breadcrumbs
    */
 
-  // MUTABLE. Array of recently visited pages. { title: "", hash: "", uid: "" }
-  const breadcrumbs = [];
+  // MUTABLE. Map from graph name to array of recently visited pages.
+  // Array elements are { title: "", hash: "", uid: "" }
+  const breadcrumbsByGraph = {};
 
   // Class used for breadcrumbs container.
   const BREADCRUMBS_CLASS = 'roam_navigator_breadcrumbs';
@@ -1398,8 +1399,8 @@
   // graph overview page.
   const IS_GRAPH_OVERVIEW_REGEX = /#\/app\/[^\/]*\/graph$/;
 
-  // Regex used to identify root graphs list.
-  const IS_GRAPHS_CHOOSER = /#\/app$/;
+  // Regex used to extract graph name
+  const GRAPH_NAME_REGEX = /#\/app\/([^\/]*)/;
 
   const DAILY_NOTES_UID = 'daily_notes';
   const GRAPH_OVERVIEW_UID = 'graph_overview';
@@ -1408,11 +1409,21 @@
   function updateBreadcrumbs() {
     if (BREADCRUMBS_ENABLED) {
       const hash = window.location.hash;
-      const isGraphsChooser = IS_GRAPHS_CHOOSER.exec(hash) !== null;
-      if (isGraphsChooser) {
-        // Omit graphs chooser from breadcrumbs list.
-        return;
+
+      const graphNameResult = GRAPH_NAME_REGEX.exec(hash);
+      let graphName = '';
+      if (graphNameResult) {
+        graphName = graphNameResult[1];
+      } else {
+        // Omit graphs chooser and other non-graph pages from
+        // breadcrumbs list.
+        debug('Omitting', hash, 'from breadcrumbs');
       }
+      if (!(graphName in breadcrumbsByGraph)) {
+        breadcrumbsByGraph[graphName] = [];
+      }
+      const breadcrumbs = breadcrumbsByGraph[graphName];
+
       const pageTitleElement =
             document.querySelector('.roam-body-main .rm-title-display > span');
       const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
@@ -1475,7 +1486,7 @@
         changed = true;
       }
       if (changed) {
-        trimExcessBreadcrumbs();
+        trimExcessBreadcrumbs(breadcrumbs);
         debug('updated breadcrumbs = ', breadcrumbs);
       }
       // Update rendering of breadcrumbs.
@@ -1486,7 +1497,7 @@
         clearBreadcrumbs();
       } else if (changed || !alreadyVisible) {
         clearBreadcrumbs();
-        renderBreadcrumbs();
+        renderBreadcrumbs(breadcrumbs);
       }
     }
   }
@@ -1499,7 +1510,7 @@
     });
   }
 
-  function renderBreadcrumbs() {
+  function renderBreadcrumbs(breadcrumbs) {
     withDomMutation(() => {
       const container = div({'class': BREADCRUMBS_CLASS});
       for (let i = breadcrumbs.length - 2; i >= 0; i--) {
@@ -1534,7 +1545,7 @@
     });
   }
 
-  function trimExcessBreadcrumbs() {
+  function trimExcessBreadcrumbs(breadcrumbs) {
     if (breadcrumbs.length > MAX_BREADCRUMB_COUNT) {
       breadcrumbs.splice(0, breadcrumbs.length - MAX_BREADCRUMB_COUNT);
     }
