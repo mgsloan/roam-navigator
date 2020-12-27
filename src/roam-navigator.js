@@ -1398,6 +1398,9 @@
   // graph overview page.
   const IS_GRAPH_OVERVIEW_REGEX = /#\/app\/[^\/]*\/graph$/;
 
+  // Regex used to identify root graphs list.
+  const IS_GRAPHS_CHOOSER = /#\/app$/;
+
   const DAILY_NOTES_UID = 'daily_notes';
   const GRAPH_OVERVIEW_UID = 'graph_overview';
   const ALL_PAGES_UID = 'all_pages';
@@ -1405,6 +1408,11 @@
   function updateBreadcrumbs() {
     if (BREADCRUMBS_ENABLED) {
       const hash = window.location.hash;
+      const isGraphsChooser = IS_GRAPHS_CHOOSER.exec(hash) !== null;
+      if (isGraphsChooser) {
+        // Omit graphs chooser from breadcrumbs list.
+        return;
+      }
       const pageTitleElement =
             document.querySelector('.roam-body-main .rm-title-display > span');
       const pageUidMatchResult = ID_FROM_HASH_REGEX.exec(hash);
