@@ -901,7 +901,8 @@
     return keys
         .replace(DAILY_NOTES_KEY, '')
         .replace(SIDEBAR_BLOCK_PREFIX, '')
-        .replace(LAST_BLOCK_KEY, '');
+        .replace(LAST_BLOCK_KEY, '')
+        .replace(CLOSE_BUTTON_PREFIX, '');
   }
 
   const HOME_ROW_KEYS = 'asdfghjkl';
