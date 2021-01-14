@@ -1,5 +1,10 @@
 # roam-navigator changelog
 
+## Version 14
+
+* No user-facing changes. Sets `content_security_policy` in extension
+  manifest.
+
 ## Version 13
 
 * Fixes a minor bug in last version, caused occasional error logs.
