@@ -1,5 +1,10 @@
 # roam-navigator changelog
 
+## Version 15
+
+* Makes sidebar block visual hints visible.  Style changes shifted
+  them out of site.
+
 ## Version 14
 
 * No user-facing changes. Sets `content_security_policy` in extension
