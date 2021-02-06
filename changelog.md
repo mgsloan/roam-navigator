@@ -1,5 +1,10 @@
 # roam-navigator changelog
 
+## Version 16
+
+* Roam changed the DOM structure of the top bar. This release adapts
+  to these changes, fixing breadcrumbs and sidebar toggling.
+
 ## Version 15
 
 * Makes sidebar block visual hints visible.  Style changes shifted
