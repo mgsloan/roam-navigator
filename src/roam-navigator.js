@@ -2045,7 +2045,7 @@
     '  display: inline;',
     '  margin-top: -14px;',
     '}',
-    '.' + BREADCRUMBS_CLASS + ' .' + LINK_HINT_CLASS + ' {',
+    '.' + BREADCRUMBS_CLASS + ' .' + HINT_CLASS + ' {',
     '  margin-top: -2px;',
     '  margin-left: 5px;',
     '}',
