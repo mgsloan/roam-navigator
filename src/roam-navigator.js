@@ -510,7 +510,7 @@
       });
     }
 
-    withUniqueClass(document, 'roam-topbar', all, (topbar) => {
+    withUniqueClass(document, 'rm-topbar', all, (topbar) => {
       const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
       const button = getUniqueClass(topbar, buttonClasses);
       if (button) {
@@ -849,7 +849,7 @@
      open on navigate (I found it jarring in practice).
 
   function ensureSidebarOpen() {
-    withUniqueClass(document, 'roam-topbar', all, (toolbar) => {
+    withUniqueClass(document, 'rm-topbar', all, (toolbar) => {
       const menu = getUniqueClass(toolbar, 'bp3-icon-menu');
       if (menu) {
         mouseOver(menu);
@@ -1532,7 +1532,7 @@
         container.appendChild(breadcrumbSpan);
       }
 
-      const topbar = selectUnique(document, '.roam-topbar > .flex-h-box');
+      const topbar = selectUnique(document, '.rm-topbar');
       if (topbar) {
         const buttonClasses = ['bp3-icon-menu', 'bp3-icon-menu-open'];
         const sidebarButton = getUniqueClass(topbar, buttonClasses);
