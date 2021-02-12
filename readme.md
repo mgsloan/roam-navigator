@@ -4,7 +4,8 @@ Wherever you may [Roam][Roam Research] :metal:, it is essential to
 have an efficient navigator. This browser extension adds a navigation
 mode to [Roam Research][] which presents visual navigation hints, that
 can be typed in order to select the corresponding link, block, or
-button.
+button. It also adds topbar "breadcrumbs" which allow you to quickly
+navigate to recent pages.
 
 * [ Extension for Google Chrome
     ![Chrome Users](https://img.shields.io/chrome-web-store/users/jdnejinifclpmdnhchmadmjcmcjpcpbj.svg)
@@ -22,6 +23,17 @@ editing text. Visual navigation hints will then appear, allowing you
 to select links, starred pages, and select blocks to edit.
 
 ![screenshot of Roam with navigation mode activated](etc/screenshot1280.png)
+
+[Roam Research]: https://roamresearch.com/
+
+# Is it useful to you?
+
+If you find this extension useful, feel free to show your appreciation
+on [Buy Me a Coffee](https://www.buymeacoffee.com/mgsloan).
+
+[Buy Me a Coffee]: https://www.buymeacoffee.com/mgsloan
+
+# Details
 
 Navigation mode is similar to the generic link clicking feature found
 in extensions like [Vimium][] or [SurfingKeys][], but it does the
@@ -54,7 +66,6 @@ following things better for the Roam usecase:
    block to enter into navigation mode. This behavior can be disabled
    in the options if you prefer to press `Alt+g` / `g`.
 
-[Roam]: https://roamresearch.com/
 [Vimium]: https://vimium.github.io/
 [SurfingKeys]: https://github.com/brookhong/Surfingkeys
 
