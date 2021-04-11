@@ -34,4 +34,4 @@ git checkout -b "roam-navigator-version-$1"
 MSG="Update roam-navigator to version $1"
 git commit -a -m "$MSG"
 
-git pull --rebase
+git pull --rebase origin master
