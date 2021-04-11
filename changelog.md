@@ -1,5 +1,13 @@
 # roam-navigator changelog
 
+## Version 17
+
+* Roam changed the text of the special page sidebar items. This fixes
+  navigation to them.
+
+* Roam changed some CSS or DOM structure, causing some tips to have
+  funky layout. This release fixes that too.
+
 ## Version 16
 
 * Roam changed the DOM structure of the top bar. This release adapts
