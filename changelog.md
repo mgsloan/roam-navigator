@@ -1,5 +1,9 @@
 # roam-navigator changelog
 
+## Version 18
+
+* Updates to extension manifest v3
+
 ## Version 17
 
 * Roam changed the text of the special page sidebar items. This fixes
