@@ -2,7 +2,7 @@
   "name": "Roam Navigator",
   "author": "Michael Sloan",
   "description": "Adds visual keyboard navigation to Roam (https://roamresearch.com/).",
-  "version": "17",
+  "version": "18",
   "homepage_url": "https://github.com/mgsloan/roam-navigator",
   "content_scripts": [
     {
@@ -11,13 +11,14 @@
       "all_frames": true
     }
   ],
-  "web_accessible_resources": [
-    "roam-navigator.js"
-  ],
+  "web_accessible_resources": [{
+    "resources": ["roam-navigator.js"],
+    "matches": ["*://roamresearch.com/*"]
+  }],
   "permissions": [
     "storage"
   ],
-  "browser_action": {
+  "action": {
     "default_popup": "options-popup.html",
     "default_icon": {
       "128": "icon128.png"
@@ -26,6 +27,8 @@
   "icons": {
     "128": "icon128.png"
   },
-  "content_security_policy": "default-src 'self'",
-  "manifest_version": 2
+  "content_security_policy": {
+    "script-src": ["'self'"]
+  },
+  "manifest_version": 3
 }
