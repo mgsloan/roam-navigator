@@ -28,7 +28,13 @@
     "128": "icon128.png"
   },
   "content_security_policy": {
-    "script-src": ["'self'"]
+    "script-src": "'self'"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{c49edf46-59ee-429b-b1fa-5e8f1c593ec4}",
+      "strict_min_version": "109.0"
+    }
   },
   "manifest_version": 3
 }
