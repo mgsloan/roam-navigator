@@ -1,3 +1,9 @@
+> [!NOTE]
+>
+> Roam Navigator is now archived - I no longer maintain it. Let me
+> know if you would like to take over maintenance, and I can have this
+> page redirect to your fork.
+
 # ![](etc/icon48.png) Roam Navigator
 
 Wherever you may [Roam][Roam Research] :metal:, it is essential to
